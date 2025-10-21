@@ -6,25 +6,62 @@
 <title>The Crypt of Shadows</title>
 <style>
   body {
-    background-color: #0b0b0b;
+    background: linear-gradient(180deg, #0a0a0a 0%, #1a0a0a 50%, #0a0a0a 100%);
     color: #ff8c00;
     font-family: "Creepster", cursive;
     text-align: center;
     padding: 40px;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: "🦇 🎃 👻 💀 🕷️ 🦇 🎃 👻 💀 🕷️";
+    position: fixed;
+    top: 10px;
+    left: 0;
+    width: 100%;
+    font-size: 2rem;
+    opacity: 0.3;
+    animation: float 20s linear infinite;
+  }
+  @keyframes float {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(100%); }
   }
   @import url('https://fonts.googleapis.com/css2?family=Creepster&display=swap');
   h1 {
     font-size: 3rem;
-    text-shadow: 0 0 20px #ff4500;
+    text-shadow: 0 0 20px #ff4500, 0 0 40px #ff4500;
+    animation: pulse 2s ease-in-out infinite;
+    margin-bottom: 10px;
+  }
+  @keyframes pulse {
+    0%, 100% { text-shadow: 0 0 20px #ff4500, 0 0 40px #ff4500; }
+    50% { text-shadow: 0 0 30px #ff4500, 0 0 60px #ff4500, 0 0 80px #ff0000; }
   }
   .riddle {
-    background: rgba(255,140,0,0.1);
+    background: linear-gradient(135deg, rgba(255,140,0,0.05) 0%, rgba(255,69,0,0.15) 100%);
     border: 2px solid #ff8c00;
     border-radius: 15px;
     margin: 20px auto;
     max-width: 600px;
     padding: 20px;
-    box-shadow: 0 0 15px #ff4500;
+    box-shadow: 0 0 15px #ff4500, inset 0 0 20px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+  }
+  .riddle:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 0 30px #ff4500, inset 0 0 20px rgba(255,69,0,0.3);
+  }
+  .riddle::before {
+    content: "🕸️";
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    font-size: 2rem;
+    opacity: 0.6;
   }
   input[type=text] {
     font-size: 1.2rem;
@@ -35,7 +72,7 @@
     color: #ff8c00;
   }
   button {
-    background: #ff8c00;
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%);
     color: black;
     font-weight: bold;
     border: none;
@@ -45,9 +82,13 @@
     cursor: pointer;
     font-family: "Creepster", cursive;
     font-size: 1.2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255,140,0,0.4);
   }
   button:hover {
-    background: #ff4500;
+    background: linear-gradient(135deg, #ff4500 0%, #ff0000 100%);
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(255,69,0,0.6);
   }
   #result {
     font-size: 1.5rem;
@@ -66,22 +107,25 @@
 <body>
 
 <h1>💀 The Crypt of Shadows 💀</h1>
-<p>Solve the five riddles. Then enter the final code to escape...</p>
+<p style="font-size: 1.3rem; text-shadow: 0 0 10px #ff8c00;">🕯️ Solve the five riddles. Then enter the final code to escape... 🕯️</p>
+<p style="font-size: 1rem; opacity: 0.7; font-style: italic;">The spirits are watching... ⚰️</p>
 
 <div class="riddle" id="r1">
   <h3>Riddle 1</h3>
   <p>I have no body, but I can appear,<br>
   I whisper in your ear, but vanish near.<br>
-  You’ll feel my chill though I am air,<br>
+  You'll feel my chill though I am air,<br>
   What am I, haunting everywhere?</p>
 </div>
 
 <div class="riddle" id="r2">
   <h3>Riddle 2</h3>
-  <p>My scream can make the bravest flee,<br>
-  I soar above the stormy sea.<br>
-  Feathers black, heart full of spite,<br>
-  What winged monster shrieks at night?</p>
+  <p>
+ I am full of ghosts, cobwebs, and fright,<br>
+People visit me on Halloween night.<br>
+Dark and spooky is my style,<br>
+What am I?
+</p>
 </div>
 
 <div class="riddle" id="r3">
@@ -89,15 +133,15 @@
   <p>Round and hollow, dark my core,<br>
   I open wide but have no door.<br>
   Without me, faces cannot see —<br>
-  What letter am I meant to be?</p>
+  What letter am I meant to be?(Letter of Shape)</p>
 </div>
 
 <div class="riddle" id="r4">
   <h3>Riddle 4</h3>
   <p>Neither living nor quite dead,<br>
-  I rise again when moonlight’s shed.<br>
+  I rise again when moonlight's shed.<br>
   I shamble slow, with vacant hue —<br>
-  Guess my name, it starts with “U.”</p>
+  Guess my name, it starts with "U."</p>
 </div>
 
 <div class="riddle" id="r5">
@@ -132,7 +176,7 @@ function checkCode() {
 // Hints for each riddle
 const hints = {
   1: "It's invisible but often said to haunt houses.",
-  2: "A mythic creature with wings and a terrible voice.",
+  2: "A Old house.",
   3: "This riddle literally asks for a single letter — look at its shape.",
   4: "Think of creatures that are neither alive nor dead.",
   5: "It shines with fire to push back the darkness."
