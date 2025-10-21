@@ -60,6 +60,19 @@ You can upload it to any static web host such as:
 
 ---
 
+##  Credits
+Created by **Aakshat Hariharan & Kory Alerte**  
+Font: [Creepster](https://fonts.google.com/specimen/Creepster) (Google Fonts)  
+Theme & riddles written in classic haunted style.  
+
+---
+
+##  License
+This project is open for fun and educational use.  
+Feel free to modify or share it for classroom games, parties, or Halloween events.  
+No commercial redistribution without permission.
+
+---
 ##  Customization Tips
 -  **Change the theme:** Edit the CSS colors in the `<style>` section of `escape.html`.  
 -  **Add sound effects:** Add `<audio>` tags for background music or thunder.  
