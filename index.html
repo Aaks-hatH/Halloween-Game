@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Crypt of Shadows</title>
+<style>
+  body {
+    background-color: #0b0b0b;
+    color: #ff8c00;
+    font-family: "Creepster", cursive;
+    text-align: center;
+    padding: 40px;
+  }
+  @import url('https://fonts.googleapis.com/css2?family=Creepster&display=swap');
+  h1 {
+    font-size: 3rem;
+    text-shadow: 0 0 20px #ff4500;
+  }
+  .riddle {
+    background: rgba(255,140,0,0.1);
+    border: 2px solid #ff8c00;
+    border-radius: 15px;
+    margin: 20px auto;
+    max-width: 600px;
+    padding: 20px;
+    box-shadow: 0 0 15px #ff4500;
+  }
+  input[type=text] {
+    font-size: 1.2rem;
+    padding: 10px;
+    border: 2px solid #ff8c00;
+    border-radius: 10px;
+    background: #1a1a1a;
+    color: #ff8c00;
+  }
+  button {
+    background: #ff8c00;
+    color: black;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    margin: 10px;
+    cursor: pointer;
+    font-family: "Creepster", cursive;
+    font-size: 1.2rem;
+  }
+  button:hover {
+    background: #ff4500;
+  }
+  #result {
+    font-size: 1.5rem;
+    margin-top: 20px;
+  }
+  #hintBox {
+    margin-top: 15px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid #ff8c00;
+    border-radius: 10px;
+    padding: 10px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<h1>💀 The Crypt of Shadows 💀</h1>
+<p>Solve the five riddles. Then enter the final code to escape...</p>
+
+<div class="riddle" id="r1">
+  <h3>Riddle 1</h3>
+  <p>I have no body, but I can appear,<br>
+  I whisper in your ear, but vanish near.<br>
+  You’ll feel my chill though I am air,<br>
+  What am I, haunting everywhere?</p>
+</div>
+
+<div class="riddle" id="r2">
+  <h3>Riddle 2</h3>
+  <p>My scream can make the bravest flee,<br>
+  I soar above the stormy sea.<br>
+  Feathers black, heart full of spite,<br>
+  What winged monster shrieks at night?</p>
+</div>
+
+<div class="riddle" id="r3">
+  <h3>Riddle 3</h3>
+  <p>Round and hollow, dark my core,<br>
+  I open wide but have no door.<br>
+  Without me, faces cannot see —<br>
+  What letter am I meant to be?</p>
+</div>
+
+<div class="riddle" id="r4">
+  <h3>Riddle 4</h3>
+  <p>Neither living nor quite dead,<br>
+  I rise again when moonlight’s shed.<br>
+  I shamble slow, with vacant hue —<br>
+  Guess my name, it starts with “U.”</p>
+</div>
+
+<div class="riddle" id="r5">
+  <h3>Riddle 5</h3>
+  <p>I live inside a haunted flame,<br>
+  Without me, dark would rule the game.<br>
+  I flicker soft, I guard your soul —<br>
+  What am I, with shining role?</p>
+</div>
+
+<h2>Enter the Final Code:</h2>
+<input type="text" id="codeInput" placeholder="Enter 5-letter code">
+<button onclick="checkCode()">Unlock</button>
+<p id="result"></p>
+
+<button onclick="showHintMenu()">💡 Need a Hint?</button>
+<div id="hintBox"></div>
+
+<script>
+function checkCode() {
+  const code = document.getElementById('codeInput').value.trim().toUpperCase();
+  const result = document.getElementById('result');
+  if (code === "GHOUL") {
+    result.innerHTML = "✅ The gate creaks open... You have escaped the Crypt!";
+    result.style.color = "#00ff00";
+  } else {
+    result.innerHTML = "❌ The spirits laugh... that code is wrong!";
+    result.style.color = "#ff0000";
+  }
+}
+
+// Hints for each riddle
+const hints = {
+  1: "It's invisible but often said to haunt houses.",
+  2: "A mythic creature with wings and a terrible voice.",
+  3: "This riddle literally asks for a single letter — look at its shape.",
+  4: "Think of creatures that are neither alive nor dead.",
+  5: "It shines with fire to push back the darkness."
+};
+
+function showHintMenu() {
+  const riddleNum = prompt("Which riddle do you want a hint for? (1-5)");
+  const hintBox = document.getElementById('hintBox');
+  if (riddleNum && hints[riddleNum]) {
+    hintBox.style.display = "block";
+    hintBox.innerHTML = `<p>💀 Hint for Riddle ${riddleNum}: ${hints[riddleNum]}</p>`;
+  } else if (riddleNum) {
+    hintBox.style.display = "block";
+    hintBox.innerHTML = "<p>That riddle doesn't exist... perhaps the spirits are teasing you!</p>";
+  }
+}
+</script>
+
+</body>
+</html>
