@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Crypt of Shadows</title>
+<title>The Locked Dungeon</title>
 <style>
   * {
     margin: 0;
@@ -23,7 +23,7 @@
   }
   
   body::before {
-    content: "You shall not pass alive";
+    content: "None shall not pass alive";
     position: fixed;
     top: 10px;
     left: 0;
@@ -278,6 +278,80 @@
     font-size: clamp(1rem, 2vw, 1.1rem);
   }
   
+  .credits-section {
+    max-width: 800px;
+    margin: 60px auto 40px;
+    padding: 50px 30px;
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(30, 15, 10, 0.95) 100%);
+    border: 1px solid rgba(255, 140, 0, 0.3);
+    border-radius: 20px;
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.6),
+      0 0 0 1px rgba(255, 140, 0, 0.1);
+  }
+  
+  .credits-section h2 {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    color: #ff8c00;
+    text-shadow: 0 0 25px rgba(255, 140, 0, 0.6);
+    margin-bottom: 40px;
+    letter-spacing: 2px;
+  }
+  
+  .creator {
+    background: linear-gradient(135deg, rgba(10, 10, 10, 0.8), rgba(20, 10, 5, 0.8));
+    border: 2px solid rgba(255, 140, 0, 0.3);
+    border-radius: 15px;
+    padding: 25px;
+    margin: 20px auto;
+    max-width: 500px;
+    transition: all 0.3s ease;
+  }
+  
+  .creator:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255, 140, 0, 0.6);
+    box-shadow: 0 10px 30px rgba(255, 69, 0, 0.4);
+  }
+  
+  .creator-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 15px;
+    animation: bounce 2s ease-in-out infinite;
+  }
+  
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  .creator:nth-child(3) .creator-icon {
+    animation-delay: 0.3s;
+  }
+  
+  .creator-name {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: #ff8c00;
+    text-shadow: 0 0 15px rgba(255, 140, 0, 0.5);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  
+  .creator-role {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: #ffb366;
+    opacity: 0.9;
+  }
+  
+  .credits-footer {
+    margin-top: 35px;
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+    color: #ff8c00;
+    opacity: 0.7;
+    font-style: italic;
+  }
+  
   @media (max-width: 768px) {
     .riddle {
       padding: 25px 20px;
@@ -291,6 +365,15 @@
     button {
       padding: 12px 25px;
       margin: 10px 5px;
+    }
+    
+    .credits-section {
+      padding: 40px 20px;
+      margin: 40px auto 30px;
+    }
+    
+    .creator {
+      padding: 20px;
     }
   }
 </style>
@@ -356,6 +439,21 @@
 <button onclick="showHintMenu()">💡 Need a Hint?</button>
 <div id="hintBox"></div>
 
+<div class="credits-section">
+  <h2> Credits </h2>
+  <div class="creator">
+    <span class="creator-icon"></span>
+    <p class="creator-name">Aakshat Hariharan</p>
+    <p class="creator-role">Game Designer & Developer</p>
+  </div>
+  <div class="creator">
+    <span class="creator-icon"></span>
+    <p class="creator-name">Kory Alerte</p>
+    <p class="creator-role">Co-Creator & Developer</p>
+  </div>
+  <p class="credits-footer">Created for Halloween 2025</p>
+</div>
+
 <script>
 function checkCode() {
   const code = document.getElementById('codeInput').value.trim().toUpperCase();
@@ -365,7 +463,7 @@ function checkCode() {
     result.style.color = "#00ff00";
     result.style.textShadow = "0 0 20px #00ff00";
   } else {
-    result.innerHTML = "It won't be that easy";
+    result.innerHTML = "It couldn't possibly be that easy...";
     result.style.color = "#ff0000";
     result.style.textShadow = "0 0 20px #ff0000";
   }
@@ -385,7 +483,7 @@ function showHintMenu() {
   const hintBox = document.getElementById('hintBox');
   if (riddleNum && hints[riddleNum]) {
     hintBox.style.display = "block";
-    hintBox.innerHTML = `<p>💀 Hint for Riddle ${riddleNum}: ${hints[riddleNum]}</p>`;
+    hintBox.innerHTML = `<p> Hint for Riddle ${riddleNum}: ${hints[riddleNum]}</p>`;
   } else if (riddleNum) {
     hintBox.style.display = "block";
     hintBox.innerHTML = "<p>That riddle doesn't exist... perhaps the spirits are teasing you!</p>";
