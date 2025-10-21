@@ -16,7 +16,7 @@
     overflow-x: hidden;
   }
   body::before {
-    content: "🦇 🎃 👻 💀 🕷️ 🦇 🎃 👻 💀 🕷️";
+    content: "You shall not pass alive";
     position: fixed;
     top: 10px;
     left: 0;
@@ -165,10 +165,10 @@ function checkCode() {
   const code = document.getElementById('codeInput').value.trim().toUpperCase();
   const result = document.getElementById('result');
   if (code === "GHOUL") {
-    result.innerHTML = "✅ The gate creaks open... You have escaped the Crypt!";
+    result.innerHTML = " You have escaped!";
     result.style.color = "#00ff00";
   } else {
-    result.innerHTML = "❌ The spirits laugh... that code is wrong!";
+    result.innerHTML = " It won't be that easy";
     result.style.color = "#ff0000";
   }
 }
