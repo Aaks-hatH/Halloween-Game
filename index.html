@@ -89,6 +89,11 @@
     overflow: hidden;
   }
   
+  .riddle.solved {
+    border-color: rgba(0, 255, 0, 0.5);
+    background: linear-gradient(135deg, rgba(0, 50, 0, 0.95) 0%, rgba(0, 30, 0, 0.95) 100%);
+  }
+  
   .riddle::after {
     content: '';
     position: absolute;
@@ -123,6 +128,12 @@
     transition: opacity 0.3s;
   }
   
+  .riddle.solved::before {
+    content: "✓";
+    color: #00ff00;
+    opacity: 1;
+  }
+  
   .riddle:hover::before {
     opacity: 0.7;
   }
@@ -140,6 +151,59 @@
     line-height: 1.8;
     color: #ffb366;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    margin-bottom: 20px;
+  }
+
+  .riddle-input {
+    margin-top: 20px;
+  }
+
+  .riddle-input input {
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    padding: 12px 20px;
+    border: 2px solid rgba(255, 140, 0, 0.4);
+    border-radius: 10px;
+    background: rgba(10, 10, 10, 0.8);
+    color: #ff8c00;
+    width: 200px;
+    font-family: "Creepster", cursive;
+    text-align: center;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+  }
+
+  .riddle-input input:focus {
+    outline: none;
+    border-color: #ff8c00;
+    box-shadow: 
+      inset 0 2px 8px rgba(0, 0, 0, 0.5),
+      0 0 20px rgba(255, 140, 0, 0.3);
+  }
+
+  .riddle-input button {
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%);
+    color: #0a0a0a;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 25px;
+    margin-left: 10px;
+    cursor: pointer;
+    font-family: "Creepster", cursive;
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4);
+  }
+
+  .riddle-input button:hover {
+    background: linear-gradient(135deg, #ff4500 0%, #ff0000 100%);
+    transform: translateY(-2px);
+  }
+
+  .riddle-feedback {
+    margin-top: 15px;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    min-height: 25px;
   }
   
   .code-section {
@@ -351,6 +415,42 @@
     opacity: 0.7;
     font-style: italic;
   }
+
+  .progress-tracker {
+    max-width: 600px;
+    margin: 30px auto;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(30, 15, 10, 0.95) 100%);
+    border: 1px solid rgba(255, 140, 0, 0.3);
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  }
+
+  .progress-tracker h3 {
+    font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+    margin-bottom: 15px;
+    color: #ff8c00;
+  }
+
+  .progress-bar {
+    background: rgba(10, 10, 10, 0.8);
+    border-radius: 10px;
+    height: 30px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 140, 0, 0.3);
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff8c00, #ff6600);
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0a0a0a;
+    font-weight: bold;
+    font-size: 0.9rem;
+  }
   
   @media (max-width: 768px) {
     .riddle {
@@ -375,14 +475,30 @@
     .creator {
       padding: 20px;
     }
+
+    .riddle-input input {
+      width: 150px;
+      margin-bottom: 10px;
+    }
+
+    .riddle-input button {
+      margin-left: 0;
+    }
   }
 </style>
 </head>
 <body>
 
-<h1> The Locked Dungeon </h1>
-<p class="subtitle"> Solve the five riddles. The first letter of each answer should spell out the word </p>
-<p class="spirits-text"> Good Luck... Your gonna need it... </p>
+<h1>💀 The Locked Dungeon 💀 </h1>
+<p class="subtitle">Solve the five riddles. The first letter of each answer spells the final code</p>
+<p class="spirits-text">Good Luck... You're gonna need it...</p>
+
+<div class="progress-tracker">
+  <h3>Progress</h3>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width: 0%;">0/5</div>
+  </div>
+</div>
 
 <div class="riddle-container">
   <div class="riddle" id="r1">
@@ -391,49 +507,72 @@
     I whisper in your ear, but vanish near.<br>
     You'll feel my chill though I am air,<br>
     What am I, haunting everywhere?</p>
+    <div class="riddle-input">
+      <input type="text" id="answer1" placeholder="Your answer">
+      <button onclick="checkRiddle(1)">Submit</button>
+    </div>
+    <div class="riddle-feedback" id="feedback1"></div>
   </div>
 
   <div class="riddle" id="r2">
     <h3>Riddle 2</h3>
-    <p>
-    I am full of ghosts, cobwebs, and fright,<br>
+    <p>I am full of ghosts, cobwebs, and fright,<br>
     People visit me on Halloween night.<br>
     Dark and spooky is my style,<br>
-    What am I?
-    </p>
+    What am I?</p>
+    <div class="riddle-input">
+      <input type="text" id="answer2" placeholder="Your answer">
+      <button onclick="checkRiddle(2)">Submit</button>
+    </div>
+    <div class="riddle-feedback" id="feedback2"></div>
   </div>
 
   <div class="riddle" id="r3">
     <h3>Riddle 3</h3>
     <p>Round and hollow, dark my core,<br>
     I open wide but have no door.<br>
-    Without me, faces cannot see <br>
+    Without me, faces cannot see<br>
     What letter am I meant to be?<br>
     (Hint: The letter is a Shape)</p>
+    <div class="riddle-input">
+      <input type="text" id="answer3" placeholder="Single letter" maxlength="1">
+      <button onclick="checkRiddle(3)">Submit</button>
+    </div>
+    <div class="riddle-feedback" id="feedback3"></div>
   </div>
 
   <div class="riddle" id="r4">
     <h3>Riddle 4</h3>
     <p>Neither living nor quite dead,<br>
     I rise again when moonlight's shed.<br>
-    I shamble slow, with vacant hue <br>
-    Guess my name."</p>
+    I shamble slow, with vacant hue<br>
+    Guess my name.</p>
+    <div class="riddle-input">
+      <input type="text" id="answer4" placeholder="Your answer">
+      <button onclick="checkRiddle(4)">Submit</button>
+    </div>
+    <div class="riddle-feedback" id="feedback4"></div>
   </div>
 
   <div class="riddle" id="r5">
     <h3>Riddle 5</h3>
     <p>I live inside a haunted flame,<br>
     Without me, dark would rule the game.<br>
-    I flicker soft, I guard your soul <br>
+    I flicker soft, I guard your soul<br>
     What am I, with shining role?</p>
+    <div class="riddle-input">
+      <input type="text" id="answer5" placeholder="Your answer">
+      <button onclick="checkRiddle(5)">Submit</button>
+    </div>
+    <div class="riddle-feedback" id="feedback5"></div>
   </div>
 </div>
 
 <div class="code-section">
   <h2>Enter the Final Code:</h2>
-  <input type="text" id="codeInput" placeholder="Enter 5-letter code">
+  <input type="text" id="codeInput" placeholder="Enter 5-letter code" maxlength="5">
   <br>
-  <button onclick="checkCode()">Unlock</button>
+  <button onclick="checkCode()"> Unlock</button>
   <p id="result"></p>
 </div>
 
@@ -456,40 +595,110 @@
 </div>
 
 <script>
-function checkCode() {
-  const code = document.getElementById('codeInput').value.trim().toUpperCase();
-  const result = document.getElementById('result');
-  if (code === "GHOUL") {
-    result.innerHTML = "You have escaped!";
-    result.style.color = "#00ff00";
-    result.style.textShadow = "0 0 20px #00ff00";
-  } else {
-    result.innerHTML = "It couldn't possibly be that easy...";
-    result.style.color = "#ff0000";
-    result.style.textShadow = "0 0 20px #ff0000";
-  }
-}
+(function() {
+  const k = [71, 72, 79, 85, 76];
+  const s = {1: false, 2: false, 3: false, 4: false, 5: false};
+  const h = {
+    1: String.fromCharCode(73,116,39,115,32,105,110,118,105,115,105,98,108,101,32,98,117,116,32,111,102,116,101,110,32,115,97,105,100,32,116,111,32,104,97,117,110,116,32,104,111,117,115,101,115,46),
+    2: String.fromCharCode(65,32,79,108,100,32,104,111,117,115,101,46),
+    3: String.fromCharCode(84,104,105,115,32,114,105,100,100,108,101,32,108,105,116,101,114,97,108,108,121,32,97,115,107,115,32,102,111,114,32,97,32,115,105,110,103,108,101,32,108,101,116,116,101,114,32,226,128,148,32,108,111,111,107,32,97,116,32,105,116,115,32,115,104,97,112,101,46),
+    4: String.fromCharCode(84,104,105,110,107,32,111,102,32,99,114,101,97,116,117,114,101,115,32,116,104,97,116,32,97,114,101,32,110,101,105,116,104,101,114,32,97,108,105,118,101,32,110,111,114,32,100,101,97,100,46),
+    5: String.fromCharCode(73,116,32,115,104,105,110,101,115,32,119,105,116,104,32,102,105,114,101,32,116,111,32,112,117,115,104,32,98,97,99,107,32,116,104,101,32,100,97,114,107,110,101,115,115,46)
+  };
 
-// Hints for each riddle
-const hints = {
-  1: "It's invisible but often said to haunt houses.",
-  2: "A Old house.",
-  3: "This riddle literally asks for a single letter — look at its shape.",
-  4: "Think of creatures that are neither alive nor dead.",
-  5: "It shines with fire to push back the darkness."
-};
+  window.checkRiddle = function(n) {
+    const inp = document.getElementById('answer' + n);
+    const fb = document.getElementById('feedback' + n);
+    const v = inp.value.trim().toUpperCase();
+    
+    if (!v) {
+      fb.style.color = '#ff0000';
+      fb.textContent = 'Please enter an answer!';
+      return;
+    }
+    
+    const c = v.charCodeAt(0);
+    if (c === k[n-1]) {
+      s[n] = true;
+      fb.style.color = '#00ff00';
+      fb.textContent = '✓ Correct! The spirits are pleased...';
+      document.getElementById('r' + n).classList.add('solved');
+      inp.disabled = true;
+      updateProgress();
+    } else {
+      fb.style.color = '#ff0000';
+      fb.textContent = '✗ Wrong answer. The spirits mock your failure...';
+      setTimeout(() => {
+        fb.textContent = '';
+      }, 3000);
+    }
+  };
 
-function showHintMenu() {
-  const riddleNum = prompt("Which riddle do you want a hint for? (1-5)");
-  const hintBox = document.getElementById('hintBox');
-  if (riddleNum && hints[riddleNum]) {
-    hintBox.style.display = "block";
-    hintBox.innerHTML = `<p> Hint for Riddle ${riddleNum}: ${hints[riddleNum]}</p>`;
-  } else if (riddleNum) {
-    hintBox.style.display = "block";
-    hintBox.innerHTML = "<p>That riddle doesn't exist... perhaps the spirits are teasing you!</p>";
+  function updateProgress() {
+    const cnt = Object.values(s).filter(v => v).length;
+    const pct = (cnt / 5) * 100;
+    const pf = document.getElementById('progressFill');
+    pf.style.width = pct + '%';
+    pf.textContent = cnt + '/5';
   }
-}
+
+  window.checkCode = function() {
+    const inp = document.getElementById('codeInput');
+    const res = document.getElementById('result');
+    const v = inp.value.trim().toUpperCase();
+    
+    if (!v) {
+      res.innerHTML = 'Enter the code to escape!';
+      res.style.color = '#ff8c00';
+      res.style.textShadow = '0 0 20px #ff8c00';
+      return;
+    }
+    
+    let match = true;
+    if (v.length !== 5) match = false;
+    for (let i = 0; i < 5 && match; i++) {
+      if (v.charCodeAt(i) !== k[i]) match = false;
+    }
+    
+    if (match) {
+      res.innerHTML = ' You have escaped the dungeon! ';
+      res.style.color = '#00ff00';
+      res.style.textShadow = '0 0 20px #00ff00';
+      setTimeout(() => {
+        res.innerHTML += '<br>The spirits bow to your wisdom...';
+      }, 1000);
+    } else {
+      res.innerHTML = ' Wrong code... The dungeon remains locked!';
+      res.style.color = '#ff0000';
+      res.style.textShadow = '0 0 20px #ff0000';
+    }
+  };
+
+  window.showHintMenu = function() {
+    const rn = prompt('Which riddle do you want a hint for? (1-5)');
+    const hb = document.getElementById('hintBox');
+    if (rn && h[rn]) {
+      hb.style.display = 'block';
+      hb.innerHTML = '<p>💡 Hint for Riddle ' + rn + ': ' + h[rn] + '</p>';
+    } else if (rn) {
+      hb.style.display = 'block';
+      hb.innerHTML = '<p>That riddle doesn\'t exist... perhaps the spirits are teasing you!</p>';
+    }
+  };
+
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+        (e.ctrlKey && e.shiftKey && e.key === 'J') || 
+        (e.ctrlKey && e.key === 'U')) {
+      e.preventDefault();
+      alert(' Nice try! The spirits protect their secrets... ');
+    }
+  });
+})();
 </script>
 
 </body>
