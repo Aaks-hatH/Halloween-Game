@@ -1,705 +1,441 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Locked Dungeon</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Locked Dungeon — Anti-Copy Classroom Version</title>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
 <style>
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
+  /* Basic reset + look */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: linear-gradient(180deg, #0a0a0a 0%, #1a0a0a 50%, #0a0a0a 100%);
+    background: linear-gradient(180deg,#0a0a0a 0%,#1a0a0a 60%,#0a0a0a 100%);
     color: #ff8c00;
-    font-family: "Creepster", cursive;
+    font-family: "Creepster", cursive, sans-serif;
     text-align: center;
-    padding: 40px 20px;
-    min-height: 100vh;
-    position: relative;
-    overflow-x: hidden;
-  }
-  
-  body::before {
-    content: "None Shall Pass";
-    position: fixed;
-    top: 10px;
-    left: 0;
-    width: 200%;
-    font-size: 2rem;
-    opacity: 0.2;
-    animation: float 25s linear infinite;
-    pointer-events: none;
-  }
-  
-  @keyframes float {
-    from { transform: translateX(-50%); }
-    to { transform: translateX(0%); }
-  }
-  
-  @import url('https://fonts.googleapis.com/css2?family=Creepster&display=swap');
-  
-  h1 {
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    text-shadow: 0 0 20px #ff4500, 0 0 40px #ff4500;
-    animation: pulse 2s ease-in-out infinite;
-    margin-bottom: 15px;
-    letter-spacing: 2px;
-  }
-  
-  @keyframes pulse {
-    0%, 100% { text-shadow: 0 0 20px #ff4500, 0 0 40px #ff4500; }
-    50% { text-shadow: 0 0 30px #ff4500, 0 0 60px #ff4500, 0 0 80px #ff0000; }
-  }
-  
-  .subtitle {
-    font-size: clamp(1rem, 2.5vw, 1.3rem);
-    text-shadow: 0 0 10px #ff8c00;
-    margin-bottom: 10px;
-  }
-  
-  .spirits-text {
-    font-size: clamp(0.9rem, 2vw, 1rem);
-    opacity: 0.7;
-    font-style: italic;
-    margin-bottom: 40px;
-  }
-  
-  .riddle-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 0 20px;
-  }
-  
-  .riddle {
-    background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(30, 15, 10, 0.95) 100%);
-    border: 1px solid rgba(255, 140, 0, 0.3);
-    border-radius: 20px;
-    margin: 25px auto;
     padding: 30px;
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.6),
-      0 0 0 1px rgba(255, 140, 0, 0.1),
-      inset 0 1px 0 rgba(255, 140, 0, 0.1);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    backdrop-filter: blur(10px);
-    overflow: hidden;
-  }
-  
-  .riddle.solved {
-    border-color: rgba(0, 255, 0, 0.5);
-    background: linear-gradient(135deg, rgba(0, 50, 0, 0.95) 0%, rgba(0, 30, 0, 0.95) 100%);
-  }
-  
-  .riddle::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 140, 0, 0.1), transparent);
-    transition: left 0.5s;
-  }
-  
-  .riddle:hover::after {
-    left: 100%;
-  }
-  
-  .riddle:hover {
-    transform: translateY(-8px);
-    border-color: rgba(255, 140, 0, 0.6);
-    box-shadow: 
-      0 12px 48px rgba(255, 69, 0, 0.4),
-      0 0 0 1px rgba(255, 140, 0, 0.3),
-      inset 0 1px 0 rgba(255, 140, 0, 0.2);
-  }
-  
-  .riddle::before {
-    content: "🕸️";
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    font-size: 1.5rem;
-    opacity: 0.4;
-    transition: opacity 0.3s;
-  }
-  
-  .riddle.solved::before {
-    content: "✓";
-    color: #00ff00;
-    opacity: 1;
-  }
-  
-  .riddle:hover::before {
-    opacity: 0.7;
-  }
-  
-  .riddle h3 {
-    font-size: clamp(1.3rem, 3vw, 1.8rem);
-    margin-bottom: 20px;
-    color: #ff6600;
-    text-shadow: 0 0 15px rgba(255, 102, 0, 0.5);
-    letter-spacing: 1px;
-  }
-  
-  .riddle p {
-    font-size: clamp(1rem, 2vw, 1.1rem);
-    line-height: 1.8;
-    color: #ffb366;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    margin-bottom: 20px;
+    min-height: 100vh;
   }
 
-  .riddle-input {
-    margin-top: 20px;
+  /* Visual elements */
+  h1 { font-size: clamp(2rem,5vw,3rem); margin-bottom: 8px; text-shadow:0 0 20px #ff4500; }
+  .subtitle { margin-bottom: 14px; opacity: .9; }
+  .riddle-container { max-width: 900px; margin: 18px auto; display: grid; grid-template-columns: 1fr; gap: 18px; }
+  .riddle-card {
+    background: linear-gradient(135deg, rgba(20,20,20,.95), rgba(30,15,10,.95));
+    border: 1px solid rgba(255,140,0,.2);
+    padding: 18px;
+    border-radius: 14px;
   }
-
-  .riddle-input input {
-    font-size: clamp(1rem, 2.5vw, 1.2rem);
-    padding: 12px 20px;
-    border: 2px solid rgba(255, 140, 0, 0.4);
-    border-radius: 10px;
-    background: rgba(10, 10, 10, 0.8);
-    color: #ff8c00;
-    width: 200px;
-    font-family: "Creepster", cursive;
-    text-align: center;
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
-    transition: all 0.3s ease;
-  }
-
-  .riddle-input input:focus {
-    outline: none;
-    border-color: #ff8c00;
-    box-shadow: 
-      inset 0 2px 8px rgba(0, 0, 0, 0.5),
-      0 0 20px rgba(255, 140, 0, 0.3);
-  }
-
-  .riddle-input button {
-    background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%);
-    color: #0a0a0a;
-    font-weight: bold;
-    border: none;
-    border-radius: 10px;
-    padding: 12px 25px;
-    margin-left: 10px;
-    cursor: pointer;
-    font-family: "Creepster", cursive;
-    font-size: clamp(0.9rem, 2vw, 1.1rem);
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4);
-  }
-
-  .riddle-input button:hover {
-    background: linear-gradient(135deg, #ff4500 0%, #ff0000 100%);
-    transform: translateY(-2px);
-  }
-
-  .riddle-feedback {
-    margin-top: 15px;
-    font-size: clamp(0.9rem, 2vw, 1rem);
-    min-height: 25px;
-  }
-  
-  .code-section {
-    max-width: 600px;
-    margin: 50px auto 30px;
-    padding: 40px 30px;
-    background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(30, 15, 10, 0.95) 100%);
-    border: 1px solid rgba(255, 140, 0, 0.3);
-    border-radius: 20px;
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.6),
-      0 0 0 1px rgba(255, 140, 0, 0.1);
-  }
-  
-  .code-section h2 {
-    font-size: clamp(1.5rem, 3vw, 2rem);
-    margin-bottom: 25px;
-    color: #ff8c00;
-    text-shadow: 0 0 20px rgba(255, 140, 0, 0.5);
-  }
-  
+  .riddle-canvas { display:block; margin: 0 auto 12px; border-radius:8px; box-shadow: 0 6px 20px rgba(0,0,0,.6); background:#0a0a0a;}
+  .riddle-controls { display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
   input[type=text] {
-    font-size: clamp(1rem, 2.5vw, 1.2rem);
-    padding: 15px 20px;
-    border: 2px solid rgba(255, 140, 0, 0.4);
-    border-radius: 12px;
-    background: rgba(10, 10, 10, 0.8);
-    color: #ff8c00;
-    width: 100%;
-    max-width: 300px;
-    transition: all 0.3s ease;
-    font-family: "Creepster", cursive;
-    text-align: center;
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+    padding:10px 14px; border-radius:10px; border:2px solid rgba(255,140,0,.3);
+    background: rgba(10,10,10,.85); color: #ff8c00; width: 220px; font-family: inherit; text-align:center;
   }
-  
-  input[type=text]:focus {
-    outline: none;
-    border-color: #ff8c00;
-    box-shadow: 
-      inset 0 2px 8px rgba(0, 0, 0, 0.5),
-      0 0 20px rgba(255, 140, 0, 0.3);
-    transform: scale(1.02);
-  }
-  
-  input[type=text]::placeholder {
-    color: rgba(255, 140, 0, 0.5);
-  }
-  
-  button {
-    background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%);
-    color: #0a0a0a;
-    font-weight: bold;
-    border: none;
-    border-radius: 12px;
-    padding: 15px 35px;
-    margin: 15px 10px;
-    cursor: pointer;
-    font-family: "Creepster", cursive;
-    font-size: clamp(1rem, 2.5vw, 1.2rem);
-    transition: all 0.3s ease;
-    box-shadow: 
-      0 4px 15px rgba(255, 140, 0, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    position: relative;
-    overflow: hidden;
-  }
-  
-  button::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.5s, height 0.5s;
-  }
-  
-  button:hover::before {
-    width: 300px;
-    height: 300px;
-  }
-  
-  button:hover {
-    background: linear-gradient(135deg, #ff4500 0%, #ff0000 100%);
-    transform: translateY(-2px);
-    box-shadow: 
-      0 6px 25px rgba(255, 69, 0, 0.6),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  }
-  
-  button:active {
-    transform: translateY(0);
-  }
-  
-  #result {
-    font-size: clamp(1.2rem, 3vw, 1.5rem);
-    margin-top: 25px;
-    padding: 15px;
-    border-radius: 10px;
-    transition: all 0.3s ease;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  #hintBox {
-    margin: 25px auto;
-    max-width: 600px;
-    background: linear-gradient(135deg, rgba(10, 10, 10, 0.95), rgba(20, 10, 5, 0.95));
-    border: 1px solid rgba(255, 140, 0, 0.4);
-    border-radius: 15px;
-    padding: 20px;
-    display: none;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-    animation: slideIn 0.3s ease;
-  }
-  
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  #hintBox p {
-    margin: 0;
-    font-size: clamp(1rem, 2vw, 1.1rem);
-  }
-  
-  .credits-section {
-    max-width: 800px;
-    margin: 60px auto 40px;
-    padding: 50px 30px;
-    background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(30, 15, 10, 0.95) 100%);
-    border: 1px solid rgba(255, 140, 0, 0.3);
-    border-radius: 20px;
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.6),
-      0 0 0 1px rgba(255, 140, 0, 0.1);
-  }
-  
-  .credits-section h2 {
-    font-size: clamp(1.8rem, 4vw, 2.5rem);
-    color: #ff8c00;
-    text-shadow: 0 0 25px rgba(255, 140, 0, 0.6);
-    margin-bottom: 40px;
-    letter-spacing: 2px;
-  }
-  
-  .creator {
-    background: linear-gradient(135deg, rgba(10, 10, 10, 0.8), rgba(20, 10, 5, 0.8));
-    border: 2px solid rgba(255, 140, 0, 0.3);
-    border-radius: 15px;
-    padding: 25px;
-    margin: 20px auto;
-    max-width: 500px;
-    transition: all 0.3s ease;
-  }
-  
-  .creator:hover {
-    transform: translateY(-5px);
-    border-color: rgba(255, 140, 0, 0.6);
-    box-shadow: 0 10px 30px rgba(255, 69, 0, 0.4);
-  }
-  
-  .creator-icon {
-    font-size: 3rem;
-    display: block;
-    margin-bottom: 15px;
-    animation: bounce 2s ease-in-out infinite;
-  }
-  
-  @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
-  
-  .creator:nth-child(3) .creator-icon {
-    animation-delay: 0.3s;
-  }
-  
-  .creator-name {
-    font-size: clamp(1.5rem, 3vw, 2rem);
-    color: #ff8c00;
-    text-shadow: 0 0 15px rgba(255, 140, 0, 0.5);
-    margin-bottom: 8px;
-    letter-spacing: 1px;
-  }
-  
-  .creator-role {
-    font-size: clamp(1rem, 2vw, 1.2rem);
-    color: #ffb366;
-    opacity: 0.9;
-  }
-  
-  .credits-footer {
-    margin-top: 35px;
-    font-size: clamp(0.9rem, 2vw, 1.1rem);
-    color: #ff8c00;
-    opacity: 0.7;
-    font-style: italic;
+  button { padding:10px 18px; border-radius:10px; border:none; font-weight:bold; cursor:pointer; background: linear-gradient(135deg,#ff8c00,#ff6600); color:#0a0a0a; }
+  #progressFill { height:30px; width:0%; display:flex; align-items:center; justify-content:center; border-radius:8px; background: linear-gradient(90deg,#ff8c00,#ff6600); color:#0a0a0a; font-weight:bold; }
+  .progress-bar { width:100%; background: rgba(10,10,10,.8); border-radius:8px; border:1px solid rgba(255,140,0,.2); padding:3px; margin-bottom:12px; }
+
+  /* Hint box and result */
+  #hintBox { display:none; max-width:760px; margin:12px auto; padding:12px; background: rgba(10,10,10,.95); border-radius:8px; border:1px solid rgba(255,140,0,.2); }
+  #result { margin-top:10px; min-height:26px; }
+
+  /* Disable text selection for elements that show riddle text (deterrent) */
+  .no-select {
+    -webkit-user-select: none; -moz-user-select:none; -ms-user-select:none; user-select:none;
   }
 
-  .progress-tracker {
-    max-width: 600px;
-    margin: 30px auto;
-    padding: 20px;
-    background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(30, 15, 10, 0.95) 100%);
-    border: 1px solid rgba(255, 140, 0, 0.3);
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-  }
-
-  .progress-tracker h3 {
-    font-size: clamp(1.2rem, 2.5vw, 1.5rem);
-    margin-bottom: 15px;
-    color: #ff8c00;
-  }
-
-  .progress-bar {
-    background: rgba(10, 10, 10, 0.8);
-    border-radius: 10px;
-    height: 30px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 140, 0, 0.3);
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #ff8c00, #ff6600);
-    transition: width 0.5s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #0a0a0a;
-    font-weight: bold;
-    font-size: 0.9rem;
-  }
-  
-  @media (max-width: 768px) {
-    .riddle {
-      padding: 25px 20px;
-      margin: 20px auto;
-    }
-    
-    .code-section {
-      padding: 30px 20px;
-    }
-    
-    button {
-      padding: 12px 25px;
-      margin: 10px 5px;
-    }
-    
-    .credits-section {
-      padding: 40px 20px;
-      margin: 40px auto 30px;
-    }
-    
-    .creator {
-      padding: 20px;
-    }
-
-    .riddle-input input {
-      width: 150px;
-      margin-bottom: 10px;
-    }
-
-    .riddle-input button {
-      margin-left: 0;
-    }
+  /* Small screens */
+  @media (max-width:640px) {
+    input[type=text] { width: 150px; }
   }
 </style>
 </head>
 <body>
 
-<h1>💀 The Locked Dungeon 💀 </h1>
-<p class="subtitle">Solve the five riddles. The first letter of each answer spells the final code</p>
-<p class="spirits-text">Good Luck... You're gonna need it...</p>
+<h1>💀 The Locked Dungeon</h1>
+<p class="subtitle">Solve the five riddles. The first letter of each answer spells the final code.</p>
 
-<div class="progress-tracker">
-  <h3>Progress</h3>
-  <div class="progress-bar">
-    <div class="progress-fill" id="progressFill" style="width: 0%;">0/5</div>
+<!-- Progress -->
+<div class="progress-card riddle-card">
+  <div style="max-width:760px;margin:0 auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <strong>Progress</strong>
+      <small id="progressText">0 / 5 solved</small>
+    </div>
+    <div class="progress-bar"><div id="progressFill" style="width:0%">0/5</div></div>
   </div>
 </div>
 
-<div class="riddle-container">
-  <div class="riddle" id="r1">
-    <h3>Riddle 1</h3>
-    <p>I have no body, but I can appear,<br>
-    I whisper in your ear, but vanish near.<br>
-    You'll feel my chill though I am air,<br>
-    What am I, haunting everywhere?</p>
-    <div class="riddle-input">
-      <input type="text" id="answer1" placeholder="Your answer">
-      <button onclick="checkRiddle(1)">Submit</button>
-    </div>
-    <div class="riddle-feedback" id="feedback1"></div>
-  </div>
-
-  <div class="riddle" id="r2">
-    <h3>Riddle 2</h3>
-    <p>I am full of ghosts, cobwebs, and fright,<br>
-    People visit me on Halloween night.<br>
-    Dark and spooky is my style,<br>
-    What am I?</p>
-    <div class="riddle-input">
-      <input type="text" id="answer2" placeholder="Your answer">
-      <button onclick="checkRiddle(2)">Submit</button>
-    </div>
-    <div class="riddle-feedback" id="feedback2"></div>
-  </div>
-
-  <div class="riddle" id="r3">
-    <h3>Riddle 3</h3>
-    <p>Round and hollow, dark my core,<br>
-    I open wide but have no door.<br>
-    Without me, faces cannot see<br>
-    What letter am I meant to be?<br>
-    (Hint: The letter is a Shape)</p>
-    <div class="riddle-input">
-      <input type="text" id="answer3" placeholder="Single letter" maxlength="1">
-      <button onclick="checkRiddle(3)">Submit</button>
-    </div>
-    <div class="riddle-feedback" id="feedback3"></div>
-  </div>
-
-  <div class="riddle" id="r4">
-    <h3>Riddle 4</h3>
-    <p>Neither living nor quite dead,<br>
-    I rise again when moonlight's shed.<br>
-    I shamble slow, with vacant hue<br>
-    Guess my name.</p>
-    <div class="riddle-input">
-      <input type="text" id="answer4" placeholder="Your answer">
-      <button onclick="checkRiddle(4)">Submit</button>
-    </div>
-    <div class="riddle-feedback" id="feedback4"></div>
-  </div>
-
-  <div class="riddle" id="r5">
-    <h3>Riddle 5</h3>
-    <p>I live inside a haunted flame,<br>
-    Without me, dark would rule the game.<br>
-    I flicker soft, I guard your soul<br>
-    What am I, with shining role?</p>
-    <div class="riddle-input">
-      <input type="text" id="answer5" placeholder="Your answer">
-      <button onclick="checkRiddle(5)">Submit</button>
-    </div>
-    <div class="riddle-feedback" id="feedback5"></div>
-  </div>
+<!-- Riddles - each will have a canvas rendering -->
+<div class="riddle-container" id="riddleContainer">
+  <!-- Cards will be injected by JS -->
 </div>
 
-<div class="code-section">
-  <h2>Enter the Final Code:</h2>
-  <input type="text" id="codeInput" placeholder="Enter 5-letter code" maxlength="5">
-  <br>
-  <button onclick="checkCode()"> Unlock</button>
+<!-- Final code area -->
+<div class="riddle-card" style="max-width:760px;margin:16px auto;">
+  <h3 style="margin-bottom:12px;">Enter the Final Code</h3>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+    <input id="codeInput" type="text" maxlength="5" placeholder="5-letter code (A..Z)">
+    <button id="unlockBtn">Unlock</button>
+  </div>
   <p id="result"></p>
 </div>
 
-<button onclick="showHintMenu()">💡 Need a Hint?</button>
-<div id="hintBox"></div>
-
-<div class="credits-section">
-  <h2> Credits </h2>
-  <div class="creator">
-    <span class="creator-icon"></span>
-    <p class="creator-name">Aakshat Hariharan</p>
-    <p class="creator-role">Game Designer & Developer</p>
-  </div>
-  <div class="creator">
-    <span class="creator-icon"></span>
-    <p class="creator-name">Kory Alerte</p>
-    <p class="creator-role">Co-Creator & Author</p>
-  </div>
-  <p class="credits-footer">Created for Halloween 2025</p>
+<!-- Hint button + hintbox -->
+<div style="margin:12px auto 40px;max-width:760px;">
+  <button id="hintBtn">💡 Need a Hint?</button>
+  <div id="hintBox"></div>
 </div>
 
 <script>
-(function() {
-  const k = [71, 72, 79, 85, 76];
-  const s = {1: false, 2: false, 3: false, 4: false, 5: false};
-  const h = {
-    1: String.fromCharCode(73,116,39,115,32,105,110,118,105,115,105,98,108,101,32,98,117,116,32,111,102,116,101,110,32,115,97,105,100,32,116,111,32,104,97,117,110,116,32,104,111,117,115,101,115,46),
-    2: String.fromCharCode(65,32,79,108,100,32,104,111,117,115,101,46),
-    3: String.fromCharCode(84,104,105,115,32,114,105,100,100,108,101,32,108,105,116,101,114,97,108,108,121,32,97,115,107,115,32,102,111,114,32,97,32,115,105,110,103,108,101,32,108,101,116,116,101,114,32,226,128,148,32,108,111,111,107,32,97,116,32,105,116,115,32,115,104,97,112,101,46),
-    4: String.fromCharCode(84,104,105,110,107,32,111,102,32,99,114,101,97,116,117,114,101,115,32,116,104,97,116,32,97,114,101,32,110,101,105,116,104,101,114,32,97,108,105,118,101,32,110,111,114,32,100,101,97,100,46),
-    5: String.fromCharCode(73,116,32,115,104,105,110,101,115,32,119,105,116,104,32,102,105,114,101,32,116,111,32,112,117,115,104,32,98,97,99,107,32,116,104,101,32,100,97,114,107,110,101,115,115,46)
-  };
+/*
+  Classroom-friendly Locked Dungeon (client-only)
+  - Riddles rendered to canvas (prevents easy copy/paste)
+  - Paste detection strips zero-width characters and warns
+  - Copy/select/context menu disabled to deter casual copying
+  - No obfuscation or malicious manipulation
+*/
 
-  window.checkRiddle = function(n) {
-    const inp = document.getElementById('answer' + n);
-    const fb = document.getElementById('feedback' + n);
-    const v = inp.value.trim().toUpperCase();
-    
-    if (!v) {
-      fb.style.color = '#ff0000';
-      fb.textContent = 'Please enter an answer!';
+// Riddle set (text) — kept here as JS strings so we can draw them to canvas
+const riddles = [
+  {
+    id: 1,
+    title: 'Riddle 1',
+    text: `I have no body, but I can appear,
+I whisper in your ear, but vanish near.
+You'll feel my chill though I am air,
+What am I, haunting everywhere?`,
+    // correct answer initial letter char code (uppercase) -> 'G' for "GHOST"
+    answer: 'G'
+  },
+  {
+    id: 2,
+    title: 'Riddle 2',
+    text: `I am full of ghosts, cobwebs, and fright,
+People visit me on Halloween night.
+Dark and spooky is my style,
+What am I?`,
+    answer: 'H' // "HAUNTED HOUSE" (H)
+  },
+  {
+    id: 3,
+    title: 'Riddle 3',
+    text: `Round and hollow, dark my core,
+I open wide but have no door.
+Without me, faces cannot see
+What letter am I meant to be?
+(Hint: The letter is a Shape)`,
+    answer: 'O' // 'O'
+  },
+  {
+    id: 4,
+    title: 'Riddle 4',
+    text: `Neither living nor quite dead,
+I rise again when moonlight's shed.
+I shamble slow, with vacant hue
+Guess my name.`,
+    answer: 'Z' // 'ZOMBIE' (Z)
+  },
+  {
+    id: 5,
+    title: 'Riddle 5',
+    text: `I live inside a haunted flame,
+Without me, dark would rule the game.
+I flicker soft, I guard your soul
+What am I, with shining role?`,
+    answer: 'L' // 'LIGHT' / 'LANTERN' (L) — pick the intended first-letter used for code
+  }
+];
+
+// internal state
+const solved = {1:false,2:false,3:false,4:false,5:false};
+
+// helper: remove zero-width and similar invisible chars
+function stripZeroWidth(str) {
+  // common zero-width / BOM / joiner characters
+  return str.replace(/[\u200B\u200C\u200D\uFEFF\u2060]/g, '');
+}
+
+function containsZeroWidth(str) {
+  return /[\u200B\u200C\u200D\uFEFF\u2060]/.test(str);
+}
+
+/* --------------- Canvas rendering --------------- */
+function createRiddleCard(r) {
+  const card = document.createElement('div');
+  card.className = 'riddle-card';
+  card.id = 'card-' + r.id;
+
+  // Title
+  const h = document.createElement('h3');
+  h.textContent = r.title;
+  card.appendChild(h);
+
+  // Canvas element (riddle displayed as image)
+  const canvas = document.createElement('canvas');
+  canvas.className = 'riddle-canvas no-select';
+  // responsive width
+  const width = Math.min(760, Math.max(320, Math.floor(window.innerWidth * 0.85)));
+  const lineHeight = 26;
+  const padding = 18;
+  // estimate canvas height based on text lines
+  const lines = r.text.split('\n').length + 1;
+  const height = padding*2 + lines * lineHeight + 40;
+  canvas.width = width;
+  canvas.height = height;
+  canvas.style.width = width + 'px';
+  canvas.style.height = height + 'px';
+  canvas.setAttribute('aria-hidden','true'); // not selectable, decorative
+  card.appendChild(canvas);
+
+  // controls: input + submit
+  const controls = document.createElement('div');
+  controls.className = 'riddle-controls';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.id = 'answer' + r.id;
+  input.placeholder = 'Your answer';
+  input.autocomplete = 'off';
+  input.spellcheck = false;
+  input.setAttribute('aria-label','Answer for ' + r.title);
+
+  // paste handling: strip zero-width characters and warn on long paste
+  input.addEventListener('paste', (ev) => {
+    ev.preventDefault();
+    const pasted = (ev.clipboardData || window.clipboardData).getData('text') || '';
+    const cleaned = stripZeroWidth(pasted);
+    if (containsZeroWidth(pasted)) {
+      alert('Notice: Invisible characters were removed from your pasted text.');
+    }
+    if (cleaned.length > 60) {
+      alert('Pasting long text is discouraged during this assessment. Please type your answer.');
       return;
     }
-    
-    const c = v.charCodeAt(0);
-    if (c === k[n-1]) {
-      s[n] = true;
-      fb.style.color = '#00ff00';
-      fb.textContent = '✓ Correct! The spirits are pleased...';
-      document.getElementById('r' + n).classList.add('solved');
-      inp.disabled = true;
-      updateProgress();
-    } else {
-      fb.style.color = '#ff0000';
-      fb.textContent = '✗ Wrong answer. The spirits mock your failure...';
-      setTimeout(() => {
-        fb.textContent = '';
-      }, 3000);
-    }
-  };
+    // insert cleaned text at caret
+    const start = input.selectionStart || 0;
+    const end = input.selectionEnd || 0;
+    const val = input.value;
+    input.value = val.slice(0,start) + cleaned + val.slice(end);
+  });
 
-  function updateProgress() {
-    const cnt = Object.values(s).filter(v => v).length;
-    const pct = (cnt / 5) * 100;
-    const pf = document.getElementById('progressFill');
-    pf.style.width = pct + '%';
-    pf.textContent = cnt + '/5';
+  // keyboard: strip zero-width when leaving field
+  input.addEventListener('blur', () => {
+    input.value = stripZeroWidth(input.value);
+  });
+
+  const submit = document.createElement('button');
+  submit.textContent = 'Submit';
+  submit.type = 'button';
+  submit.onclick = () => checkRiddle(r.id);
+
+  const feedback = document.createElement('div');
+  feedback.id = 'feedback' + r.id;
+  feedback.style.minHeight = '22px';
+  feedback.style.marginTop = '10px';
+  feedback.style.color = '#ff8c00';
+
+  controls.appendChild(input);
+  controls.appendChild(submit);
+  card.appendChild(controls);
+  card.appendChild(feedback);
+
+  // render canvas text
+  drawRiddleOnCanvas(canvas, r.title, r.text);
+
+  return card;
+}
+
+function drawRiddleOnCanvas(canvas, title, text) {
+  const ctx = canvas.getContext('2d');
+  // background
+  ctx.fillStyle = '#0a0a0a';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // subtle border
+  ctx.strokeStyle = 'rgba(255,140,0,0.18)';
+  ctx.lineWidth = 2;
+  roundRect(ctx, 2, 2, canvas.width-4, canvas.height-4, 10);
+  ctx.stroke();
+
+  // title
+  ctx.fillStyle = '#ff8c00';
+  const titleSize = Math.min(28, Math.floor(canvas.width / 22));
+  ctx.font = `bold ${titleSize}px Creepster, sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.fillText(title, 20, 38);
+
+  // draw text with word wrap
+  ctx.fillStyle = '#ffb366';
+  const fontSize = Math.min(18, Math.floor(canvas.width / 40));
+  ctx.font = `${fontSize}px sans-serif`;
+  const x = 20;
+  let y = 64;
+  const maxWidth = canvas.width - 40;
+  const lines = text.split('\n');
+  for (const line of lines) {
+    wrapDrawText(ctx, line, x, y, maxWidth, fontSize + 8);
+    y += (fontSize + 8) * (Math.ceil(ctx.measureText(line).width / maxWidth) || 1);
   }
 
-  window.checkCode = function() {
-    const inp = document.getElementById('codeInput');
-    const res = document.getElementById('result');
-    const v = inp.value.trim().toUpperCase();
-    
-    if (!v) {
-      res.innerHTML = 'Enter the code to escape!';
-      res.style.color = '#ff8c00';
-      res.style.textShadow = '0 0 20px #ff8c00';
-      return;
-    }
-    
-    let match = true;
-    if (v.length !== 5) match = false;
-    for (let i = 0; i < 5 && match; i++) {
-      if (v.charCodeAt(i) !== k[i]) match = false;
-    }
-    
-    if (match) {
-      res.innerHTML = ' You have escaped the dungeon! ';
-      res.style.color = '#00ff00';
-      res.style.textShadow = '0 0 20px #00ff00';
-      setTimeout(() => {
-        res.innerHTML += '<br>The spirits bow to your wisdom...';
-      }, 1000);
+  // small decorative ghost-like icon in corner (not selectable)
+  ctx.font = '20px serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.fillText('🕸️', canvas.width - 46, 36);
+}
+
+// helper: rounded rect path
+function roundRect(ctx, x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x+radius, y);
+  ctx.arcTo(x+width, y, x+width, y+height, radius);
+  ctx.arcTo(x+width, y+height, x, y+height, radius);
+  ctx.arcTo(x, y+height, x, y, radius);
+  ctx.arcTo(x, y, x+width, y, radius);
+  ctx.closePath();
+}
+
+// helper: wrapped/drawn text
+function wrapDrawText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' ';
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > maxWidth && n > 0) {
+      ctx.fillText(line, x, y);
+      line = words[n] + ' ';
+      y += lineHeight;
     } else {
-      res.innerHTML = ' Wrong code... The dungeon remains locked!';
-      res.style.color = '#ff0000';
-      res.style.textShadow = '0 0 20px #ff0000';
+      line = testLine;
     }
-  };
+  }
+  ctx.fillText(line, x, y);
+}
 
-  window.showHintMenu = function() {
-    const rn = prompt('Which riddle do you want a hint for? (1-5)');
-    const hb = document.getElementById('hintBox');
-    if (rn && h[rn]) {
-      hb.style.display = 'block';
-      hb.innerHTML = '<p>💡 Hint for Riddle ' + rn + ': ' + h[rn] + '</p>';
-    } else if (rn) {
-      hb.style.display = 'block';
-      hb.innerHTML = '<p>That riddle doesn\'t exist... perhaps the spirits are teasing you!</p>';
-    }
-  };
+/* --------------- Append all riddle cards --------------- */
+const container = document.getElementById('riddleContainer');
+riddles.forEach(r => {
+  container.appendChild(createRiddleCard(r));
+});
 
-  document.addEventListener('contextmenu', function(e) {
+/* --------------- Checking logic --------------- */
+function updateProgressDisplay() {
+  const solvedCount = Object.values(solved).filter(Boolean).length;
+  const pct = (solvedCount/5) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressFill').textContent = `${solvedCount}/5`;
+  document.getElementById('progressText').textContent = `${solvedCount} / 5 solved`;
+}
+
+function checkRiddle(id) {
+  const inp = document.getElementById('answer' + id);
+  const fb = document.getElementById('feedback' + id);
+  if (!inp) return;
+  let val = (inp.value || '').trim();
+  val = stripZeroWidth(val);
+  if (!val) {
+    fb.style.color = '#ff4444';
+    fb.textContent = 'Please type an answer (no copy/paste).';
+    return;
+  }
+  // check first letter uppercase
+  const first = val[0].toUpperCase();
+  const expected = riddles.find(r => r.id === id).answer.toUpperCase();
+  if (first === expected) {
+    solved[id] = true;
+    fb.style.color = '#00cc66';
+    fb.textContent = '✓ Correct — nice work.';
+    inp.disabled = true;
+    // mark card visually
+    const card = document.getElementById('card-' + id);
+    if (card) card.style.borderColor = 'rgba(0,255,0,0.18)';
+    updateProgressDisplay();
+  } else {
+    fb.style.color = '#ff4444';
+    fb.textContent = '✗ Incorrect — try again (type, do not paste).';
+    setTimeout(() => { fb.textContent = ''; }, 3000);
+  }
+}
+
+/* --------------- Code checking --------------- */
+function getFinalCode() {
+  // final code is first letters of solutions in order (as specified in riddles.answer)
+  return riddles.map(r => r.answer[0].toUpperCase()).join('');
+}
+
+document.getElementById('unlockBtn').addEventListener('click', () => {
+  const codeInput = document.getElementById('codeInput');
+  const res = document.getElementById('result');
+  const entered = stripZeroWidth((codeInput.value || '').trim().toUpperCase());
+  if (!entered) {
+    res.style.color = '#ff8c00';
+    res.textContent = 'Enter the 5-letter code to escape!';
+    return;
+  }
+  if (entered.length !== 5) {
+    res.style.color = '#ff4444';
+    res.textContent = 'Code must be 5 letters.';
+    return;
+  }
+  const target = getFinalCode();
+  if (entered === target) {
+    res.style.color = '#00cc66';
+    res.textContent = 'You have escaped the dungeon! The spirits bow to your wisdom.';
+  } else {
+    res.style.color = '#ff4444';
+    res.textContent = 'Wrong code... The dungeon remains locked.';
+  }
+});
+
+/* --------------- Hints --------------- */
+const hints = {
+  1: "Think of a chilling presence that has no physical body.",
+  2: "A place people haunt on Halloween — two words, starts with H.",
+  3: "A round letter that is also a shape.",
+  4: "An undead creature that shambles — starts with Z.",
+  5: "A source of light that keeps the dark away — starts with L."
+};
+
+document.getElementById('hintBtn').addEventListener('click', () => {
+  const rn = prompt('Which riddle do you want a hint for? (1-5) — enter a number');
+  const hb = document.getElementById('hintBox');
+  if (!rn) {
+    hb.style.display = 'none'; hb.innerHTML = '';
+    return;
+  }
+  const n = parseInt(rn);
+  if (hints[n]) {
+    hb.style.display = 'block';
+    // show hint text but keep it non-selectable to deter direct copy
+    hb.innerHTML = `<p class="no-select">💡 Hint for Riddle ${n}: ${hints[n]}</p>`;
+  } else {
+    hb.style.display = 'block';
+    hb.innerHTML = `<p class="no-select">That riddle doesn't exist — try a number from 1 to 5.</p>`;
+  }
+});
+
+
+document.addEventListener('contextmenu', (e) => {
+  // allow context menu in inputs (so students can paste normally if permitted)
+  if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
+  e.preventDefault();
+});
+// prevent Ctrl+C selection copying via keyboard shortcuts on non-inputs
+document.addEventListener('keydown', (e) => {
+  const blocked = (e.ctrlKey && (e.key === 'c' || e.key === 'C')) || (e.key === 'F12');
+  if (blocked && e.target.tagName.toLowerCase() !== 'input' && e.target.tagName.toLowerCase() !== 'textarea') {
     e.preventDefault();
-  });
+    alert('Copying is disabled for this assessment. Please type your answers.');
+  }
+});
 
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || 
-        (e.ctrlKey && e.shiftKey && e.key === 'J') || 
-        (e.ctrlKey && e.key === 'U')) {
-      e.preventDefault();
-      alert(' Nice try! The spirits protect their secrets... ');
-    }
-  });
-})();
+// update progress on load (in case)
+updateProgressDisplay();
+
+
+ 
 </script>
-
 </body>
 </html>
