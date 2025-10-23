@@ -361,14 +361,14 @@
     if (first === expected) {
       solved[id] = true;
       fb.style.color = '#00cc66';
-      fb.textContent = '✓ Correct — nice work.';
+      fb.textContent = '✓ Correct, nice work.';
       inp.disabled = true;
       const card = document.getElementById('card-' + id);
       if (card) card.style.borderColor = 'rgba(0,255,0,0.4)';
       updateProgressDisplay();
     } else {
       fb.style.color = '#ff4444';
-      fb.textContent = '✗ Incorrect — try again.';
+      fb.textContent = '✗ Incorrect, try again.';
       setTimeout(() => { fb.textContent = ''; }, 3000);
     }
   }
