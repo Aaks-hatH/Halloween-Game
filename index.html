@@ -55,6 +55,10 @@
   }
   button:hover { transform: scale(1.05); }
   button:active { transform: scale(0.98); }
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
   #progressFill { 
     height:30px; 
     width:0%; 
@@ -210,6 +214,32 @@
   let firstWarningShown = false;
   let isLocked = false;
 
+  // Check if already locked on page load
+  async function checkLockStatus() {
+    try {
+      const result = await window.storage.get('dungeon_locked', false);
+      if (result && result.value === 'true') {
+        const countResult = await window.storage.get('tab_switch_count', false);
+        const count = countResult ? parseInt(countResult.value) : 5;
+        lockPagePermanently(count, true);
+        return true;
+      }
+    } catch (e) {
+      // Key doesn't exist, not locked
+    }
+    return false;
+  }
+
+  // Save lock status
+  async function saveLockStatus(count) {
+    try {
+      await window.storage.set('dungeon_locked', 'true', false);
+      await window.storage.set('tab_switch_count', count.toString(), false);
+    } catch (e) {
+      console.error('Failed to save lock status:', e);
+    }
+  }
+
   function stripZeroWidth(str) {
     return str.replace(/[\u200B\u200C\u200D\uFEFF\u2060]/g, '');
   }
@@ -333,10 +363,12 @@
     ctx.fillText(line, x, y);
   }
 
-  const container = document.getElementById('riddleContainer');
-  riddles.forEach(r => {
-    container.appendChild(createRiddleCard(r));
-  });
+  function renderRiddles() {
+    const container = document.getElementById('riddleContainer');
+    riddles.forEach(r => {
+      container.appendChild(createRiddleCard(r));
+    });
+  }
 
   function updateProgressDisplay() {
     const solvedCount = Object.values(solved).filter(Boolean).length;
@@ -467,7 +499,7 @@
       tabSwitchCount++;
       
       if (tabSwitchCount >= 5) {
-        lockPagePermanently();
+        lockPagePermanently(tabSwitchCount, false);
       }
     } else {
       if (tabSwitchCount === 1 && !firstWarningShown) {
@@ -483,7 +515,7 @@
     const overlay = createWarningOverlay(
       '⚠️ WARNING ⚠️',
       `Tab switching detected!<br><br>Using external help (like ChatGPT) defeats the purpose of this puzzle.<br><br>Try to solve it yourself! 🧠`,
-      `Switches detected: ${tabSwitchCount}<br><strong style="color: #ff4444;">After 5 switches, the exam will be LOCKED!</strong>`
+      `Switches detected: ${tabSwitchCount}<br><strong style="color: #ff4444;">After 5 switches, the exam will be PERMANENTLY LOCKED!</strong>`
     );
     document.body.appendChild(overlay);
   }
@@ -491,7 +523,7 @@
   function showSevereWarning() {
     const overlay = createWarningOverlay(
       '🚨 FINAL WARNING 🚨',
-      `You have switched tabs ${tabSwitchCount} times!<br><br>One more switch and the page will be PERMANENTLY LOCKED!`,
+      `You have switched tabs ${tabSwitchCount} times!<br><br>One more switch and the page will be PERMANENTLY LOCKED!<br><br><strong style="color: #ff0000;">Even refreshing won't help!</strong>`,
       `Switches remaining: ${5 - tabSwitchCount}`
     );
     document.body.appendChild(overlay);
@@ -538,8 +570,14 @@
     return overlay;
   }
 
-  function lockPagePermanently() {
+  function lockPagePermanently(count, isReload) {
     isLocked = true;
+    
+    // Save to storage if not already from reload
+    if (!isReload) {
+      saveLockStatus(count);
+    }
+    
     const overlay = document.createElement('div');
     overlay.style.cssText = `
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -557,14 +595,18 @@
     `;
 
     lockBox.innerHTML = `
-      <h1 style="color: #ff0000; font-size: 3rem; margin-bottom: 30px; font-family: Creepster, cursive;">🔒 LOCKED 🔒</h1>
+      <h1 style="color: #ff0000; font-size: 3rem; margin-bottom: 30px; font-family: Creepster, cursive;">🔒 PERMANENTLY LOCKED 🔒</h1>
       <p style="color: #ffaa66; font-size: 1.3rem; margin-bottom: 20px; line-height: 1.8; font-family: sans-serif;">
         You have been caught switching tabs too many times!<br><br>
-        The dungeon is now permanently locked.<br><br>
-        Please refresh the page to start over.
+        The dungeon is now <strong style="color: #ff0000;">PERMANENTLY LOCKED</strong>.<br><br>
+        Refreshing the page will not help.<br><br>
+        ${isReload ? 'You cannot access this puzzle anymore.' : 'This lock persists across page reloads.'}
       </p>
-      <p style="color: #ff8c00; font-size: 1rem; font-family: sans-serif; font-style: italic;">
-        Tab switches detected: ${tabSwitchCount}
+      <p style="color: #ff8c00; font-size: 1rem; font-family: sans-serif; font-style: italic; margin-top: 30px;">
+        Tab switches detected: ${count}
+      </p>
+      <p style="color: #cc7700; font-size: 0.9rem; font-family: sans-serif; margin-top: 20px;">
+        To reset, you must clear your browser data for this site.
       </p>
     `;
 
@@ -577,13 +619,22 @@
     });
   }
 
-  updateProgressDisplay();
-
-  setInterval(() => {
-    if (typeof console !== 'undefined' && console.clear) {
-      console.clear();
+  // Initialize - check if locked first
+  async function init() {
+    const locked = await checkLockStatus();
+    if (!locked) {
+      updateProgressDisplay();
+      
+      // Clear console periodically
+      setInterval(() => {
+        if (typeof console !== 'undefined' && console.clear) {
+          console.clear();
+        }
+      }, 1000);
     }
-  }, 1000);
+  }
+
+  init();
 
 })();
 </script>
