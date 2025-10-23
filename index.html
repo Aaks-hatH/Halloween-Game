@@ -252,17 +252,17 @@
   let isLocked = false;
 
   // Check lock status on load
-  async function checkInitialLock() {
+  function checkInitialLock() {
     try {
-      const result = await window.storage.get('dungeon_locked', false);
-      if (result && result.value === 'true') {
-        const countResult = await window.storage.get('tab_switch_count', false);
-        const count = countResult ? parseInt(countResult.value) : 5;
+      const locked = localStorage.getItem('dungeon_locked');
+      if (locked === 'true') {
+        const count = parseInt(localStorage.getItem('tab_switch_count') || '5');
         showPermanentLock(count);
         return true;
       }
     } catch (e) {
-      // Not locked
+      // localStorage not available or blocked
+      console.error('Storage error:', e);
     }
     return false;
   }
@@ -568,9 +568,7 @@
       <p style="color: #ff8c00; font-size: 1rem; font-family: sans-serif; font-style: italic; margin-top: 30px;">
         Tab switches detected: ${count}
       </p>
-      <p style="color: #cc7700; font-size: 0.9rem; font-family: sans-serif; margin-top: 20px;">
-        To reset, you must clear your browser data for this site.
-      </p>
+      
     `;
 
     overlay.appendChild(lockBox);
