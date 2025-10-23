@@ -1,8 +1,6 @@
 # The Crypt of Shadows – Halloween Escape Room Website 
 
-Welcome, brave soul!  
-This is a **Halloween-themed web escape room** where players must solve five spooky riddles to discover a secret word.  
-When they enter the correct code — **GHOUL** — the crypt’s gate creaks open and they escape!
+
 
 ---
 
