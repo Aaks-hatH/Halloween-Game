@@ -1,468 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The Locked Dungeon — Anti-Copy Classroom Version</title>
-<link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
-<style>
-  /* Basic reset + look */
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: linear-gradient(180deg,#0a0a0a 0%,#1a0a0a 60%,#0a0a0a 100%);
-    color: #ff8c00;
-    font-family: "Creepster", cursive, sans-serif;
-    text-align: center;
-    padding: 30px;
-    min-height: 100vh;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Halloween Riddle Escape</title>
 
-  /* Visual elements */
-  h1 { font-size: clamp(2rem,5vw,3rem); margin-bottom: 8px; text-shadow:0 0 20px #ff4500; }
-  .subtitle { margin-bottom: 14px; opacity: .9; }
-  .riddle-container { max-width: 900px; margin: 18px auto; display: grid; grid-template-columns: 1fr; gap: 18px; }
-  .riddle-card {
-    background: linear-gradient(135deg, rgba(20,20,20,.95), rgba(30,15,10,.95));
-    border: 1px solid rgba(255,140,0,.2);
-    padding: 18px;
-    border-radius: 14px;
-  }
-  .riddle-canvas { display:block; margin: 0 auto 12px; border-radius:8px; box-shadow: 0 6px 20px rgba(0,0,0,.6); background:#0a0a0a;}
-  .riddle-controls { display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
-  input[type=text] {
-    padding:10px 14px; border-radius:10px; border:2px solid rgba(255,140,0,.3);
-    background: rgba(10,10,10,.85); color: #ff8c00; width: 220px; font-family: inherit; text-align:center;
-  }
-  button { padding:10px 18px; border-radius:10px; border:none; font-weight:bold; cursor:pointer; background: linear-gradient(135deg,#ff8c00,#ff6600); color:#0a0a0a; }
-  #progressFill { height:30px; width:0%; display:flex; align-items:center; justify-content:center; border-radius:8px; background: linear-gradient(90deg,#ff8c00,#ff6600); color:#0a0a0a; font-weight:bold; }
-  .progress-bar { width:100%; background: rgba(10,10,10,.8); border-radius:8px; border:1px solid rgba(255,140,0,.2); padding:3px; margin-bottom:12px; }
+  <!-- 
+  MIT License
 
-  /* Hint box and result */
-  #hintBox { display:none; max-width:760px; margin:12px auto; padding:12px; background: rgba(10,10,10,.95); border-radius:8px; border:1px solid rgba(255,140,0,.2); }
-  #result { margin-top:10px; min-height:26px; }
+  Copyright (c) 2025 Aakshat Hariharan
 
-  /* Disable text selection for elements that show riddle text (deterrent) */
-  .no-select {
-    -webkit-user-select: none; -moz-user-select:none; -ms-user-select:none; user-select:none;
-  }
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
 
-  /* Small screens */
-  @media (max-width:640px) {
-    input[type=text] { width: 150px; }
-  }
-</style>
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+  -->
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #0a0a0a, #1c1c1c);
+      color: #f5f5f5;
+      font-family: 'Trebuchet MS', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    h1 {
+      color: #ff7518;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px #ff7518;
+    }
+
+    .riddle-box {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 30px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 0 15px rgba(255, 117, 24, 0.4);
+    }
+
+    .hint {
+      color: #aaa;
+      font-size: 0.9em;
+      margin-top: 10px;
+      font-style: italic;
+    }
+
+    input {
+      margin-top: 20px;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      width: 80%;
+      font-size: 1em;
+      text-align: center;
+    }
+
+    button {
+      margin-top: 15px;
+      background-color: #ff7518;
+      color: black;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #ffa94d;
+    }
+
+    footer {
+      position: absolute;
+      bottom: 10px;
+      font-size: 0.8em;
+      opacity: 0.7;
+    }
+
+    a {
+      color: #ff7518;
+      text-decoration: none;
+    }
+  </style>
+
+  <script>
+    // --- Anti Copy/Paste / Inspect Protection ---
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.addEventListener('keydown', event => {
+      if (
+        event.ctrlKey && (
+          event.key === 'u' ||
+          event.key === 'U' ||
+          event.key === 'c' ||
+          event.key === 'C' ||
+          event.key === 's' ||
+          event.key === 'S' ||
+          event.key === 'i' ||
+          event.key === 'I'
+        ) || event.key === 'F12'
+      ) {
+        event.preventDefault();
+      }
+    });
+
+    // --- Riddle Logic ---
+    const riddles = [
+      {
+        question: "I am known to say 'boo' and float through walls at night. What am I?",
+        answer: ["ghost", "g"],
+        hint: "You won’t find me among the living."
+      },
+      {
+        question: "You may visit me if you dare, but beware of what lies inside. What am I?",
+        answer: ["haunted house", "h"],
+        hint: "Spirits love to make this place their home."
+      },
+      {
+        question: "I’m the symbol you see most in October. What am I?",
+        answer: ["o"],
+        hint: "I start off round, and I’m carved for Halloween."
+      },
+      {
+        question: "Neither alive nor dead, I walk in the night. What am I?",
+        answer: ["undead", "u"],
+        hint: "They rise when others rest."
+      },
+      {
+        question: "I glow to guide you through the dark. What am I?",
+        answer: ["light", "lantern", "l"],
+        hint: "Without me, shadows win."
+      }
+    ];
+
+    let current = 0;
+
+    function loadRiddle() {
+      const r = riddles[current];
+      document.getElementById("riddle-text").innerText = r.question;
+      document.getElementById("hint-text").innerText = "Hint: " + r.hint;
+      document.getElementById("answer").value = "";
+    }
+
+    function checkAnswer() {
+      const input = document.getElementById("answer").value.trim().toLowerCase();
+      const valid = riddles[current].answer.map(a => a.toLowerCase());
+      if (valid.includes(input)) {
+        current++;
+        if (current < riddles.length) {
+          loadRiddle();
+        } else {
+          document.querySelector(".riddle-box").innerHTML = `
+            <h2>🎉 You escaped the Halloween riddles!</h2>
+            <p>Well done, brave soul.</p>
+          `;
+        }
+      } else {
+        alert("❌ Incorrect. Try again!");
+      }
+    }
+
+    window.onload = loadRiddle;
+  </script>
 </head>
+
 <body>
+  <h1>🎃 Halloween Riddle Escape 🎃</h1>
 
-<h1>💀 The Locked Dungeon</h1>
-<p class="subtitle">Solve the five riddles. The first letter of each answer spells the final code.</p>
-
-<!-- Progress -->
-<div class="progress-card riddle-card">
-  <div style="max-width:760px;margin:0 auto;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <strong>Progress</strong>
-      <small id="progressText">0 / 5 solved</small>
-    </div>
-    <div class="progress-bar"><div id="progressFill" style="width:0%">0/5</div></div>
+  <div class="riddle-box">
+    <p id="riddle-text"></p>
+    <p class="hint" id="hint-text"></p>
+    <input type="text" id="answer" placeholder="Enter your answer..." autocomplete="off" />
+    <button onclick="checkAnswer()">Submit</button>
   </div>
-</div>
 
-<!-- Riddles - each will have a canvas rendering -->
-<div class="riddle-container" id="riddleContainer">
-  <!-- Cards will be injected by JS -->
-</div>
-
-<!-- Final code area -->
-<div class="riddle-card" style="max-width:760px;margin:16px auto;">
-  <h3 style="margin-bottom:12px;">Enter the Final Code</h3>
-  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-    <input id="codeInput" type="text" maxlength="5" placeholder="5-letter code (A..Z)">
-    <button id="unlockBtn">Unlock</button>
-  </div>
-  <p id="result"></p>
-</div>
-
-<!-- Hint button + hintbox -->
-<div style="margin:12px auto 40px;max-width:760px;">
-  <button id="hintBtn">💡 Need a Hint?</button>
-  <div id="hintBox"></div>
-</div>
-
-<script>
-/*
-  Classroom-friendly Locked Dungeon (client-only)
-  - Riddles rendered to canvas (prevents easy copy/paste)
-  - Paste detection strips zero-width characters and warns
-  - Copy/select/context menu disabled to deter casual copying
-  - No obfuscation or malicious manipulation
-*/
-
-// Riddle set (text) — kept here as JS strings so we can draw them to canvas
-const riddles = [
-  {
-    id: 1,
-    title: 'Riddle 1',
-    text: `I have no body, but I can appear,
-I whisper in your ear, but vanish near.
-You'll feel my chill though I am air,
-What am I, haunting everywhere?`,
-    // correct answer initial letter char code (uppercase) -> 'G' for "GHOST"
-    answer: 'G'
-  },
-  {
-    id: 2,
-    title: 'Riddle 2',
-    text: `I am full of ghosts, cobwebs, and fright,
-People visit me on Halloween night.
-Dark and spooky is my style,
-What am I?`,
-    answer: 'H' // "HAUNTED HOUSE" (H)
-  },
-  {
-    id: 3,
-    title: 'Riddle 3',
-    text: `Round and hollow, dark my core,
-I open wide but have no door.
-Without me, faces cannot see
-What letter am I meant to be?
-(Hint: The letter is a Shape)`,
-    answer: 'O' // 'O'
-  },
-  {
-    id: 4,
-    title: 'Riddle 4',
-    text: `Neither living nor quite dead,
-I rise again when moonlight's shed.
-I shamble slow, with vacant hue
-Guess my name.`,
-    answer: 'U' // 'Undead' (U)
-  },
-  {
-    id: 5,
-    title: 'Riddle 5',
-    text: `I live inside a haunted flame,
-Without me, dark would rule the game.
-I flicker soft, I guard your soul
-What am I, with shining role?`,
-    answer: 'L' // 'LIGHT' / 'LANTERN' (L) — pick the intended first-letter used for code
-  }
-];
-
-// internal state
-const solved = {1:false,2:false,3:false,4:false,5:false};
-
-// helper: remove zero-width and similar invisible chars
-function stripZeroWidth(str) {
-  // common zero-width / BOM / joiner characters
-  return str.replace(/[\u200B\u200C\u200D\uFEFF\u2060]/g, '');
-}
-
-function containsZeroWidth(str) {
-  return /[\u200B\u200C\u200D\uFEFF\u2060]/.test(str);
-}
-
-/* --------------- Canvas rendering --------------- */
-function createRiddleCard(r) {
-  const card = document.createElement('div');
-  card.className = 'riddle-card';
-  card.id = 'card-' + r.id;
-
-  // Title
-  const h = document.createElement('h3');
-  h.textContent = r.title;
-  card.appendChild(h);
-
-  // Canvas element (riddle displayed as image)
-  const canvas = document.createElement('canvas');
-  canvas.className = 'riddle-canvas no-select';
-  // responsive width
-  const width = Math.min(760, Math.max(320, Math.floor(window.innerWidth * 0.85)));
-  const lineHeight = 26;
-  const padding = 18;
-  // estimate canvas height based on text lines
-  const lines = r.text.split('\n').length + 1;
-  const height = padding*2 + lines * lineHeight + 40;
-  canvas.width = width;
-  canvas.height = height;
-  canvas.style.width = width + 'px';
-  canvas.style.height = height + 'px';
-  canvas.setAttribute('aria-hidden','true'); // not selectable, decorative
-  card.appendChild(canvas);
-
-  // controls: input + submit
-  const controls = document.createElement('div');
-  controls.className = 'riddle-controls';
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.id = 'answer' + r.id;
-  input.placeholder = 'Your answer';
-  input.autocomplete = 'off';
-  input.spellcheck = false;
-  input.setAttribute('aria-label','Answer for ' + r.title);
-
-  // paste handling: strip zero-width characters and warn on long paste
-  input.addEventListener('paste', (ev) => {
-    ev.preventDefault();
-    const pasted = (ev.clipboardData || window.clipboardData).getData('text') || '';
-    const cleaned = stripZeroWidth(pasted);
-    if (containsZeroWidth(pasted)) {
-      alert('Notice: Invisible characters were removed from your pasted text.');
-    }
-    if (cleaned.length > 60) {
-      alert('Pasting long text is discouraged during this assessment. Please type your answer.');
-      return;
-    }
-    // insert cleaned text at caret
-    const start = input.selectionStart || 0;
-    const end = input.selectionEnd || 0;
-    const val = input.value;
-    input.value = val.slice(0,start) + cleaned + val.slice(end);
-  });
-
-  // keyboard: strip zero-width when leaving field
-  input.addEventListener('blur', () => {
-    input.value = stripZeroWidth(input.value);
-  });
-
-  const submit = document.createElement('button');
-  submit.textContent = 'Submit';
-  submit.type = 'button';
-  submit.onclick = () => checkRiddle(r.id);
-
-  const feedback = document.createElement('div');
-  feedback.id = 'feedback' + r.id;
-  feedback.style.minHeight = '22px';
-  feedback.style.marginTop = '10px';
-  feedback.style.color = '#ff8c00';
-
-  controls.appendChild(input);
-  controls.appendChild(submit);
-  card.appendChild(controls);
-  card.appendChild(feedback);
-
-  // render canvas text
-  drawRiddleOnCanvas(canvas, r.title, r.text);
-
-  return card;
-}
-
-function drawRiddleOnCanvas(canvas, title, text) {
-  const ctx = canvas.getContext('2d');
-  // background
-  ctx.fillStyle = '#0a0a0a';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  // subtle border
-  ctx.strokeStyle = 'rgba(255,140,0,0.18)';
-  ctx.lineWidth = 2;
-  roundRect(ctx, 2, 2, canvas.width-4, canvas.height-4, 10);
-  ctx.stroke();
-
-  // title
-  ctx.fillStyle = '#ff8c00';
-  const titleSize = Math.min(28, Math.floor(canvas.width / 22));
-  ctx.font = `bold ${titleSize}px Creepster, sans-serif`;
-  ctx.textAlign = 'left';
-  ctx.fillText(title, 20, 38);
-
-  // draw text with word wrap
-  ctx.fillStyle = '#ffb366';
-  const fontSize = Math.min(18, Math.floor(canvas.width / 40));
-  ctx.font = `${fontSize}px sans-serif`;
-  const x = 20;
-  let y = 64;
-  const maxWidth = canvas.width - 40;
-  const lines = text.split('\n');
-  for (const line of lines) {
-    wrapDrawText(ctx, line, x, y, maxWidth, fontSize + 8);
-    y += (fontSize + 8) * (Math.ceil(ctx.measureText(line).width / maxWidth) || 1);
-  }
-
-  // small decorative ghost-like icon in corner (not selectable)
-  ctx.font = '20px serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.08)';
-  ctx.fillText('🕸️', canvas.width - 46, 36);
-}
-
-// helper: rounded rect path
-function roundRect(ctx, x, y, width, height, radius) {
-  ctx.beginPath();
-  ctx.moveTo(x+radius, y);
-  ctx.arcTo(x+width, y, x+width, y+height, radius);
-  ctx.arcTo(x+width, y+height, x, y+height, radius);
-  ctx.arcTo(x, y+height, x, y, radius);
-  ctx.arcTo(x, y, x+width, y, radius);
-  ctx.closePath();
-}
-
-// helper: wrapped/drawn text
-function wrapDrawText(ctx, text, x, y, maxWidth, lineHeight) {
-  const words = text.split(' ');
-  let line = '';
-  for (let n = 0; n < words.length; n++) {
-    const testLine = line + words[n] + ' ';
-    const metrics = ctx.measureText(testLine);
-    if (metrics.width > maxWidth && n > 0) {
-      ctx.fillText(line, x, y);
-      line = words[n] + ' ';
-      y += lineHeight;
-    } else {
-      line = testLine;
-    }
-  }
-  ctx.fillText(line, x, y);
-}
-
-/* --------------- Append all riddle cards --------------- */
-const container = document.getElementById('riddleContainer');
-riddles.forEach(r => {
-  container.appendChild(createRiddleCard(r));
-});
-
-/* --------------- Checking logic --------------- */
-function updateProgressDisplay() {
-  const solvedCount = Object.values(solved).filter(Boolean).length;
-  const pct = (solvedCount/5) * 100;
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressFill').textContent = `${solvedCount}/5`;
-  document.getElementById('progressText').textContent = `${solvedCount} / 5 solved`;
-}
-
-function checkRiddle(id) {
-  const inp = document.getElementById('answer' + id);
-  const fb = document.getElementById('feedback' + id);
-  if (!inp) return;
-  let val = (inp.value || '').trim();
-  val = stripZeroWidth(val);
-  if (!val) {
-    fb.style.color = '#ff4444';
-    fb.textContent = 'Please type an answer (no copy/paste).';
-    return;
-  }
-  // check first letter uppercase
-  const first = val[0].toUpperCase();
-  const expected = riddles.find(r => r.id === id).answer.toUpperCase();
-  if (first === expected) {
-    solved[id] = true;
-    fb.style.color = '#00cc66';
-    fb.textContent = '✓ Correct — nice work.';
-    inp.disabled = true;
-    // mark card visually
-    const card = document.getElementById('card-' + id);
-    if (card) card.style.borderColor = 'rgba(0,255,0,0.18)';
-    updateProgressDisplay();
-  } else {
-    fb.style.color = '#ff4444';
-    fb.textContent = '✗ Incorrect — try again (type, do not paste).';
-    setTimeout(() => { fb.textContent = ''; }, 3000);
-  }
-}
-
-/* --------------- Code checking --------------- */
-function getFinalCode() {
-  // final code is first letters of solutions in order (as specified in riddles.answer)
-  return riddles.map(r => r.answer[0].toUpperCase()).join('');
-}
-
-document.getElementById('unlockBtn').addEventListener('click', () => {
-  const codeInput = document.getElementById('codeInput');
-  const res = document.getElementById('result');
-  const entered = stripZeroWidth((codeInput.value || '').trim().toUpperCase());
-  if (!entered) {
-    res.style.color = '#ff8c00';
-    res.textContent = 'Enter the 5-letter code to escape!';
-    return;
-  }
-  if (entered.length !== 5) {
-    res.style.color = '#ff4444';
-    res.textContent = 'Code must be 5 letters.';
-    return;
-  }
-  const target = getFinalCode();
-  if (entered === target) {
-    res.style.color = '#00cc66';
-    res.textContent = 'You have escaped the dungeon! The spirits bow to your wisdom.';
-  } else {
-    res.style.color = '#ff4444';
-    res.textContent = 'Wrong code... The dungeon remains locked.';
-  }
-});
-
-/* --------------- Hints --------------- */
-const hints = {
-  1: "Think of a chilling presence that has no physical body.",
-  2: "A place people haunt on Halloween — two words, starts with H.",
-  3: "A round letter that is also a shape.",
-  4: "An undead creature that shambles — starts with Z.",
-  5: "A source of light that keeps the dark away — starts with L."
-};
-
-document.getElementById('hintBtn').addEventListener('click', () => {
-  const rn = prompt('Which riddle do you want a hint for? (1-5) — enter a number');
-  const hb = document.getElementById('hintBox');
-  if (!rn) {
-    hb.style.display = 'none'; hb.innerHTML = '';
-    return;
-  }
-  const n = parseInt(rn);
-  if (hints[n]) {
-    hb.style.display = 'block';
-    // show hint text but keep it non-selectable to deter direct copy
-    hb.innerHTML = `<p class="no-select">💡 Hint for Riddle ${n}: ${hints[n]}</p>`;
-  } else {
-    hb.style.display = 'block';
-    hb.innerHTML = `<p class="no-select">That riddle doesn't exist — try a number from 1 to 5.</p>`;
-  }
-});
-
-
-document.addEventListener('contextmenu', (e) => {
-  // allow context menu in inputs (so students can paste normally if permitted)
-  if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
-  e.preventDefault();
-});
-// prevent Ctrl+C selection copying via keyboard shortcuts on non-inputs
-document.addEventListener('keydown', (e) => {
-  const blocked = (e.ctrlKey && (e.key === 'c' || e.key === 'C')) || (e.key === 'F12');
-  if (blocked && e.target.tagName.toLowerCase() !== 'input' && e.target.tagName.toLowerCase() !== 'textarea') {
-    e.preventDefault();
-    alert('Copying is disabled for this assessment. Please type your answers.');
-  }
-});
-
-// update progress on load (in case)
-updateProgressDisplay();
-
-/*
-<!--
-MIT License
-
-Copyright (c) 2025 Aakshat Hariharan  
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
--->
-*/
-
-
-
- 
-</script>
+  <footer>
+    © 2025 Aakshat Hariharan — <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a>
+  </footer>
 </body>
 </html>
