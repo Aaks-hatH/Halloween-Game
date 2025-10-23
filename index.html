@@ -63,6 +63,44 @@ SOFTWARE.
   #hintBox { display:none; max-width:760px; margin:12px auto; padding:12px; background: rgba(10,10,10,.95); border-radius:8px; border:1px solid rgba(255,140,0,.2); }
   #result { margin-top:10px; min-height:26px; }
 
+  /* Credits */
+  .credits {
+    margin-top: 60px;
+    padding: 30px 20px;
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+    background: linear-gradient(135deg, rgba(20,20,20,.8), rgba(30,15,10,.8));
+    border: 1px solid rgba(255,140,0,.15);
+    border-radius: 14px;
+  }
+  .credits h3 {
+    color: #ff8c00;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px #ff4500;
+  }
+  .credits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    font-family: sans-serif;
+  }
+  .credit-item {
+    color: #ffb366;
+    font-size: 1.1rem;
+    line-height: 1.5;
+  }
+  .credit-name {
+    color: #ff8c00;
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+  .credit-role {
+    color: #cc7700;
+    font-style: italic;
+  }
+
   /* Disable text selection for elements that show riddle text (deterrent) */
   .no-select {
     -webkit-user-select: none; -moz-user-select:none; -ms-user-select:none; user-select:none;
@@ -74,6 +112,16 @@ SOFTWARE.
     to { opacity: 1; }
   }
 
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
+
+  @keyframes flash {
+    0%, 100% { background: rgba(139, 0, 0, 1); }
+    50% { background: rgba(200, 0, 0, 1); }
+  }
+
   /* Small screens */
   @media (max-width:640px) {
     input[type=text] { width: 150px; }
@@ -82,7 +130,7 @@ SOFTWARE.
 </head>
 <body>
 
-<h1>💀 The Locked Dungeon 💀</h1>
+<h1>💀 The Locked Dungeon</h1>
 <p class="subtitle">Solve the five riddles. The first letter of each answer spells the final code.</p>
 
 <!-- Progress -->
@@ -117,12 +165,28 @@ SOFTWARE.
   <div id="hintBox"></div>
 </div>
 
+<!-- Credits Section -->
+<div class="credits">
+  <h3>🎃 Credits 🎃</h3>
+  <div class="credits-list">
+    <div class="credit-item">
+      <span class="credit-name">Aakshat Hariharan</span><br>
+      <span class="credit-role">Developer & Creator</span>
+    </div>
+    <div class="credit-item">
+      <span class="credit-name">Kory Alerte</span><br>
+      <span class="credit-role">Co-Creator & Author</span>
+    </div>
+  </div>
+</div>
+
 <script>
 (function() {
   'use strict';
   
   // Encoded data - riddles and answers stored as base64 to prevent easy viewing
-  const encodedData = 'W3siaWQiOjEsInRpdGxlIjoiUmlkZGxlIDEiLCJ0ZXh0IjoiSSBoYXZlIG5vIGJvZHksIGJ1dCBJIGNhbiBhcHBlYXIsXG5JIHdoaXNwZXIgaW4geW91ciBlYXIsIGJ1dCB2YW5pc2ggbmVhci5cblxuWW91J2xsIGZlZWwgbXkgY2hpbGwgdGhvdWdoIEkgYW0gYWlyLFxuV2hhdCBhbSBJLCBoYXVudGluZyBldmVyeXdoZXJlPyIsImFuc3dlciI6IkcifSx7ImlkIjoyLCJ0aXRsZSI6IlJpZGRsZSAyIiwidGV4dCI6IkkgYW0gZnVsbCBvZiBnaG9zdHMsIGNvYndlYnMsIGFuZCBmcmlnaHQsXG5QZW9wbGUgdmlzaXQgbWUgb24gSGFsbG93ZWVuIG5pZ2h0LlxuRGFyayBhbmQgc3Bvb2t5IGlzIG15IHN0eWxlLFxuV2hhdCBhbSBJPyIsImFuc3dlciI6IkgifSx7ImlkIjozLCJ0aXRsZSI6IlJpZGRsZSAzIiwidGV4dCI6IlJvdW5kIGFuZCBob2xsb3csIGRhcmsgbXkgY29yZSxcbkkgb3BlbiB3aWRlIGJ1dCBoYXZlIG5vIGRvb3IuXG5XaXRob3V0IG1lLCBmYWNlcyBjYW5ub3Qgc2VlXG5XaGF0IGxldHRlciBhbSBJIG1lYW50IHRvIGJlP1xuKEhpbnQ6IFRoZSBsZXR0ZXIgaXMgYSBTaGFwZSkiLCJhbnN3ZXIiOiJPIn0seyJpZCI6NCwidGl0bGUiOiJSaWRkbGUgNCIsInRleHQiOiJOZWl0aGVyIGxpdmluZyBub3IgcXVpdGUgZGVhZCxcbkkgcmlzZSBhZ2FpbiB3aGVuIG1vb25saWdodCdzIHNoZWQuXG5JIHNoYW1ibGUgc2xvdywgd2l0aCB2YWNhbnQgaHVlXG5HdWVzcyBteSBuYW1lLiIsImFuc3dlciI6IloifSx7ImlkIjo1LCJ0aXRsZSI6IlJpZGRsZSA1IiwidGV4dCI6IkkgbGl2ZSBpbnNpZGUgYSBoYXVudGVkIGZsYW1lLFxuV2l0aG91dCBtZSwgZGFyayB3b3VsZCBydWxlIHRoZSBnYW1lLlxuSSBmbGlja2VyIHNvZnQsIEkgZ3VhcmQgeW91ciBzb3VsXG5XaGF0IGFtIEksIHdpdGggc2hpbmluZyByb2xlPyIsImFuc3dlciI6IkwifV0=';
+  // Answer for riddle 4 changed from Z (zombie) to U (undead)
+  const encodedData = 'W3siaWQiOjEsInRpdGxlIjoiUmlkZGxlIDEiLCJ0ZXh0IjoiSSBoYXZlIG5vIGJvZHksIGJ1dCBJIGNhbiBhcHBlYXIsXG5JIHdoaXNwZXIgaW4geW91ciBlYXIsIGJ1dCB2YW5pc2ggbmVhci5cblxuWW91J2xsIGZlZWwgbXkgY2hpbGwgdGhvdWdoIEkgYW0gYWlyLFxuV2hhdCBhbSBJLCBoYXVudGluZyBldmVyeXdoZXJlPyIsImFuc3dlciI6IkcifSx7ImlkIjoyLCJ0aXRsZSI6IlJpZGRsZSAyIiwidGV4dCI6IkkgYW0gZnVsbCBvZiBnaG9zdHMsIGNvYndlYnMsIGFuZCBmcmlnaHQsXG5QZW9wbGUgdmlzaXQgbWUgb24gSGFsbG93ZWVuIG5pZ2h0LlxuRGFyayBhbmQgc3Bvb2t5IGlzIG15IHN0eWxlLFxuV2hhdCBhbSBJPyIsImFuc3dlciI6IkgifSx7ImlkIjozLCJ0aXRsZSI6IlJpZGRsZSAzIiwidGV4dCI6IlJvdW5kIGFuZCBob2xsb3csIGRhcmsgbXkgY29yZSxcbkkgb3BlbiB3aWRlIGJ1dCBoYXZlIG5vIGRvb3IuXG5XaXRob3V0IG1lLCBmYWNlcyBjYW5ub3Qgc2VlXG5XaGF0IGxldHRlciBhbSBJIG1lYW50IHRvIGJlP1xuKEhpbnQ6IFRoZSBsZXR0ZXIgaXMgYSBTaGFwZSkiLCJhbnN3ZXIiOiJPIn0seyJpZCI6NCwidGl0bGUiOiJSaWRkbGUgNCIsInRleHQiOiJOZWl0aGVyIGxpdmluZyBub3IgcXVpdGUgZGVhZCxcbkkgcmlzZSBhZ2FpbiB3aGVuIG1vb25saWdodCdzIHNoZWQuXG5JIHNoYW1ibGUgc2xvdywgd2l0aCB2YWNhbnQgaHVlXG5HdWVzcyBteSBuYW1lLiIsImFuc3dlciI6IlUifSx7ImlkIjo1LCJ0aXRsZSI6IlJpZGRsZSA1IiwidGV4dCI6IkkgbGl2ZSBpbnNpZGUgYSBoYXVudGVkIGZsYW1lLFxuV2l0aG91dCBtZSwgZGFyayB3b3VsZCBydWxlIHRoZSBnYW1lLlxuSSBmbGlja2VyIHNvZnQsIEkgZ3VhcmQgeW91ciBzb3VsXG5XaGF0IGFtIEksIHdpdGggc2hpbmluZyByb2xlPyIsImFuc3dlciI6IkwifV0=';
   
   const encodedHints = 'eyIxIjoiVGhpbmsgb2YgYSBjaGlsbGluZyBwcmVzZW5jZSB0aGF0IGhhcyBubyBwaHlzaWNhbCBib2R5LiIsIjIiOiJBIHBsYWNlIHBlb3BsZSB2aXNpdCBvbiBIYWxsb3dlZW4gd2hlcmUgc2NhcnkgdGhpbmdzIGFyZSBkaXNwbGF5ZWQsIHR3byB3b3Jkcy4iLCIzIjoiQSByb3VuZCBsZXR0ZXIgdGhhdCBpcyBhbHNvIGEgc2hhcGUuIiwiNCI6IkEgd29yZCBmb3IgdGhlIGNhdGVnb3J5IGEgd2Fsa2luZyBkZWFkIGNyZWF0dXJlIGlzIGNsYXNzaWZpZWQgYXMuIiwiNSI6IkEgc291cmNlIG9mIGZsaWNrZXJpbmcgaWxsdW1pbmF0aW9uIHRoYXQga2VlcHMgdGhlIGRhcmsgYXdheS4ifQ==';
   
@@ -433,17 +497,25 @@ SOFTWARE.
   /* --------------- Tab Switch Detection & Warning --------------- */
   let tabSwitchCount = 0;
   let firstWarningShown = false;
+  let isLocked = false;
 
   document.addEventListener('visibilitychange', () => {
+    if (isLocked) return; // Already locked, ignore further switches
+    
     if (document.hidden) {
       // User switched away from the tab
       tabSwitchCount++;
+      
+      // After 5 tab switches, permanently lock the page
+      if (tabSwitchCount >= 5) {
+        lockPagePermanently();
+      }
     } else {
       // User returned to the tab
       if (tabSwitchCount === 1 && !firstWarningShown) {
         showTabSwitchWarning();
         firstWarningShown = true;
-      } else if (tabSwitchCount >= 3) {
+      } else if (tabSwitchCount >= 3 && tabSwitchCount < 5) {
         showSevereWarning();
       }
     }
@@ -484,7 +556,8 @@ SOFTWARE.
         Try to solve it yourself! 
       </p>
       <p style="color: #ff8c00; font-size: 0.9rem; margin-bottom: 25px; font-family: sans-serif;">
-        Switches detected: ${tabSwitchCount}
+        Switches detected: ${tabSwitchCount}<br>
+        <strong style="color: #ff4444;">After 5 switches, the exam will be LOCKED!</strong>
       </p>
       <button id="acknowledgeBtn" style="
         padding: 15px 30px;
@@ -498,71 +571,3 @@ SOFTWARE.
         font-family: Creepster, cursive;
       ">I Understand</button>
     `;
-
-    overlay.appendChild(warningBox);
-    document.body.appendChild(overlay);
-
-    document.getElementById('acknowledgeBtn').addEventListener('click', () => {
-      overlay.remove();
-    });
-  }
-
-  function showSevereWarning() {
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.98);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-      animation: fadeIn 0.3s ease;
-    `;
-
-    const warningBox = document.createElement('div');
-    warningBox.style.cssText = `
-      background: linear-gradient(135deg, rgba(139, 0, 0, 0.98), rgba(70, 0, 0, 0.98));
-      border: 4px solid #ff0000;
-      border-radius: 20px;
-      padding: 50px;
-      max-width: 550px;
-      text-align: center;
-      box-shadow: 0 0 80px rgba(255, 0, 0, 0.7);
-      animation: pulse 2s infinite;
-    `;
-
-    warningBox.innerHTML = `
-      <h2 style="color: #ff0000; font-size: 2.5rem; margin-bottom: 25px; font-family: Creepster, cursive;">🚨 SEVERE WARNING 🚨</h2>
-      <p style="color: #ffaa66; font-size: 1.2rem; margin-bottom: 25px; line-height: 1.6; font-family: sans-serif;">
-        Multiple tab switches detected!<br><br>
-        <strong style="color: #ff4444;">You've switched tabs ${tabSwitchCount} times.</strong><br><br>
-        This strongly suggests you're using external help.<br><br>
-        Please solve the puzzle honestly or restart! 
-      </p>
-      <button id="acknowledgeSevereBtn" style="
-        padding: 18px 35px;
-        font-size: 1.2rem;
-        border-radius: 12px;
-        border: none;
-        background: linear-gradient(135deg, #ff0000, #cc0000);
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-        font-family: Creepster, cursive;
-      ">I'll Play Fair</button>
-    `;
-
-    overlay.appendChild(warningBox);
-    document.body.appendChild(overlay);
-
-    document.getElementById('acknowledgeSevereBtn').addEventListener('click', () => {
-      overlay.remove();
-    });
-  }
-
-})();
-</script>
