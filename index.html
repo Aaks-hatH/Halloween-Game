@@ -25,14 +25,20 @@
     border-radius: 14px;
     transition: border-color 0.3s;
   }
-  .riddle-canvas { 
-    display:block; 
-    margin: 0 auto 12px; 
-    border-radius:8px; 
-    box-shadow: 0 6px 20px rgba(0,0,0,.6); 
-    background:#0a0a0a;
+  .riddle-text {
+    background: rgba(10,10,10,.9);
+    border: 1px solid rgba(255,140,0,.15);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 12px 0;
+    color: #ffb366;
+    font-family: sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    text-align: left;
   }
-  .riddle-controls { display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
+  .riddle-controls { display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; margin-top: 15px; }
   input[type=text] {
     padding:10px 14px; 
     border-radius:10px; 
@@ -42,6 +48,7 @@
     width: 220px; 
     font-family: sans-serif; 
     text-align:center;
+    font-size: 1rem;
   }
   button { 
     padding:10px 18px; 
@@ -52,6 +59,7 @@
     background: linear-gradient(135deg,#ff8c00,#ff6600); 
     color:#0a0a0a;
     transition: transform 0.1s;
+    font-size: 1rem;
   }
   button:hover { transform: scale(1.05); }
   button:active { transform: scale(0.98); }
@@ -70,6 +78,7 @@
     color:#0a0a0a; 
     font-weight:bold;
     transition: width 0.3s;
+    font-family: sans-serif;
   }
   .progress-bar { 
     width:100%; 
@@ -89,6 +98,12 @@
     border:1px solid rgba(255,140,0,.2); 
   }
   #result { margin-top:10px; min-height:26px; font-family: sans-serif; }
+  .feedback {
+    min-height: 22px;
+    margin-top: 10px;
+    font-family: sans-serif;
+    font-size: 1rem;
+  }
   .credits {
     margin-top: 60px;
     padding: 30px 20px;
@@ -189,55 +204,67 @@
 (function() {
   'use strict';
   
-  const encodedData = 'W3siaWQiOjEsInRpdGxlIjoiUmlkZGxlIDEiLCJ0ZXh0IjoiSSBoYXZlIG5vIGJvZHksIGJ1dCBJIGNhbiBhcHBlYXIsXG5JIHdoaXNwZXIgaW4geW91ciBlYXIsIGJ1dCB2YW5pc2ggbmVhci5cblxuWW91J2xsIGZlZWwgbXkgY2hpbGwgdGhvdWdoIEkgYW0gYWlyLFxuV2hhdCBhbSBJLCBoYXVudGluZyBldmVyeXdoZXJlPyIsImFuc3dlciI6IkcifSx7ImlkIjoyLCJ0aXRsZSI6IlJpZGRsZSAyIiwidGV4dCI6IkkgYW0gZnVsbCBvZiBnaG9zdHMsIGNvYndlYnMsIGFuZCBmcmlnaHQsXG5QZW9wbGUgdmlzaXQgbWUgb24gSGFsbG93ZWVuIG5pZ2h0LlxuRGFyayBhbmQgc3Bvb2t5IGlzIG15IHN0eWxlLFxuV2hhdCBhbSBJPyIsImFuc3dlciI6IkgifSx7ImlkIjozLCJ0aXRsZSI6IlJpZGRsZSAzIiwidGV4dCI6IlJvdW5kIGFuZCBob2xsb3csIGRhcmsgbXkgY29yZSxcbkkgb3BlbiB3aWRlIGJ1dCBoYXZlIG5vIGRvb3IuXG5XaXRob3V0IG1lLCBmYWNlcyBjYW5ub3Qgc2VlXG5XaGF0IGxldHRlciBhbSBJIG1lYW50IHRvIGJlP1xuKEhpbnQ6IFRoZSBsZXR0ZXIgaXMgYSBTaGFwZSkiLCJhbnN3ZXIiOiJPIn0seyJpZCI6NCwidGl0bGUiOiJSaWRkbGUgNCIsInRleHQiOiJOZWl0aGVyIGxpdmluZyBub3IgcXVpdGUgZGVhZCxcbkkgcmlzZSBhZ2FpbiB3aGVuIG1vb25saWdodCdzIHNoZWQuXG5JIHNoYW1ibGUgc2xvdywgd2l0aCB2YWNhbnQgaHVlXG5HdWVzcyBteSBuYW1lLiIsImFuc3dlciI6IlUifSx7ImlkIjo1LCJ0aXRsZSI6IlJpZGRsZSA1IiwidGV4dCI6IkkgbGl2ZSBpbnNpZGUgYSBoYXVudGVkIGZsYW1lLFxuV2l0aG91dCBtZSwgZGFyayB3b3VsZCBydWxlIHRoZSBnYW1lLlxuSSBmbGlja2VyIHNvZnQsIEkgZ3VhcmQgeW91ciBzb3VsXG5XaGF0IGFtIEksIHdpdGggc2hpbmluZyByb2xlPyIsImFuc3dlciI6IkwifV0=';
-  const encodedHints = 'eyIxIjoiVGhpbmsgb2YgYSBjaGlsbGluZyBwcmVzZW5jZSB0aGF0IGhhcyBubyBwaHlzaWNhbCBib2R5LiIsIjIiOiJBIHBsYWNlIHBlb3BsZSB2aXNpdCBvbiBIYWxsb3dlZW4gd2hlcmUgc2NhcnkgdGhpbmdzIGFyZSBkaXNwbGF5ZWQsIHR3byB3b3Jkcy4iLCIzIjoiQSByb3VuZCBsZXR0ZXIgdGhhdCBpcyBhbHNvIGEgc2hhcGUuIiwiNCI6IkEgd29yZCBmb3IgdGhlIGNhdGVnb3J5IGEgd2Fsa2luZyBkZWFkIGNyZWF0dXJlIGlzIGNsYXNzaWZpZWQgYXMuIiwiNSI6IkEgc291cmNlIG9mIGZsaWNrZXJpbmcgaWxsdW1pbmF0aW9uIHRoYXQga2VlcHMgdGhlIGRhcmsgYXdheS4ifQ==';
-  
-  function decode(str) {
-    try {
-      return JSON.parse(atob(str));
-    } catch(e) {
-      console.error('Decode error:', e);
-      return null;
+  // Riddles data
+  const riddles = [
+    {
+      id: 1,
+      title: "Riddle 1",
+      text: "I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?",
+      answer: "G"
+    },
+    {
+      id: 2,
+      title: "Riddle 2",
+      text: "I am full of ghosts, cobwebs, and fright,\nPeople visit me on Halloween night.\nDark and spooky is my style,\nWhat am I?",
+      answer: "H"
+    },
+    {
+      id: 3,
+      title: "Riddle 3",
+      text: "Round and hollow, dark my core,\nI open wide but have no door.\nWithout me, faces cannot see\nWhat letter am I meant to be?\n(Hint: The letter is a Shape)",
+      answer: "O"
+    },
+    {
+      id: 4,
+      title: "Riddle 4",
+      text: "Neither living nor quite dead,\nI rise again when moonlight's shed.\nI shamble slow, with vacant hue\nGuess my name.",
+      answer: "U"
+    },
+    {
+      id: 5,
+      title: "Riddle 5",
+      text: "I live inside a haunted flame,\nWithout me, dark would rule the game.\nI flicker soft, I guard your soul\nWhat am I, with shining role?",
+      answer: "L"
     }
-  }
+  ];
   
-  const riddles = decode(encodedData);
-  const hints = decode(encodedHints);
+  const hints = {
+    "1": "Think of a chilling presence that has no physical body.",
+    "2": "A place people visit on Halloween where scary things are displayed, two words.",
+    "3": "A round letter that is also a shape.",
+    "4": "A word for the category a walking dead creature is classified as.",
+    "5": "A source of flickering illumination that keeps the dark away."
+  };
   
-  if (!riddles || !hints) {
-    document.body.innerHTML = '<h1>Error loading puzzle</h1>';
-    return;
-  }
-
-  const solved = {1:false,2:false,3:false,4:false,5:false};
+  const solved = {1:false, 2:false, 3:false, 4:false, 5:false};
   let tabSwitchCount = 0;
   let firstWarningShown = false;
   let isLocked = false;
 
-  // Check if already locked on page load
-  async function checkLockStatus() {
+  // Check lock status on load
+  async function checkInitialLock() {
     try {
       const result = await window.storage.get('dungeon_locked', false);
       if (result && result.value === 'true') {
         const countResult = await window.storage.get('tab_switch_count', false);
         const count = countResult ? parseInt(countResult.value) : 5;
-        lockPagePermanently(count, true);
+        showPermanentLock(count);
         return true;
       }
     } catch (e) {
-      // Key doesn't exist, not locked
+      // Not locked
     }
     return false;
-  }
-
-  // Save lock status
-  async function saveLockStatus(count) {
-    try {
-      await window.storage.set('dungeon_locked', 'true', false);
-      await window.storage.set('tab_switch_count', count.toString(), false);
-    } catch (e) {
-      console.error('Failed to save lock status:', e);
-    }
   }
 
   function stripZeroWidth(str) {
@@ -254,21 +281,14 @@
     h.style.marginBottom = '12px';
     card.appendChild(h);
 
-    const canvas = document.createElement('canvas');
-    canvas.className = 'riddle-canvas no-select';
-    const width = Math.min(760, Math.max(320, Math.floor(window.innerWidth * 0.85)));
-    const lineHeight = 26;
-    const padding = 18;
-    const lines = r.text.split('\n').length + 1;
-    const height = padding*2 + lines * lineHeight + 40;
-    canvas.width = width;
-    canvas.height = height;
-    canvas.style.width = width + 'px';
-    canvas.style.height = height + 'px';
-    card.appendChild(canvas);
+    const riddleText = document.createElement('div');
+    riddleText.className = 'riddle-text no-select';
+    riddleText.textContent = r.text;
+    card.appendChild(riddleText);
 
     const controls = document.createElement('div');
     controls.className = 'riddle-controls';
+    
     const input = document.createElement('input');
     input.type = 'text';
     input.id = 'answer' + r.id;
@@ -288,79 +308,15 @@
     submit.onclick = () => checkRiddle(r.id);
 
     const feedback = document.createElement('div');
+    feedback.className = 'feedback';
     feedback.id = 'feedback' + r.id;
-    feedback.style.minHeight = '22px';
-    feedback.style.marginTop = '10px';
-    feedback.style.fontFamily = 'sans-serif';
 
     controls.appendChild(input);
     controls.appendChild(submit);
     card.appendChild(controls);
     card.appendChild(feedback);
 
-    drawRiddleOnCanvas(canvas, r.title, r.text);
-
     return card;
-  }
-
-  function drawRiddleOnCanvas(canvas, title, text) {
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#0a0a0a';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    ctx.strokeStyle = 'rgba(255,140,0,0.18)';
-    ctx.lineWidth = 2;
-    roundRect(ctx, 2, 2, canvas.width-4, canvas.height-4, 10);
-    ctx.stroke();
-
-    ctx.fillStyle = '#ff8c00';
-    const titleSize = Math.min(28, Math.floor(canvas.width / 22));
-    ctx.font = `bold ${titleSize}px Creepster, sans-serif`;
-    ctx.textAlign = 'left';
-    ctx.fillText(title, 20, 38);
-
-    ctx.fillStyle = '#ffb366';
-    const fontSize = Math.min(18, Math.floor(canvas.width / 40));
-    ctx.font = `${fontSize}px sans-serif`;
-    const x = 20;
-    let y = 64;
-    const maxWidth = canvas.width - 40;
-    const lines = text.split('\n');
-    for (const line of lines) {
-      if (line.trim()) {
-        wrapDrawText(ctx, line, x, y, maxWidth, fontSize + 8);
-        y += (fontSize + 8) * (Math.ceil(ctx.measureText(line).width / maxWidth) || 1);
-      } else {
-        y += fontSize + 8;
-      }
-    }
-  }
-
-  function roundRect(ctx, x, y, width, height, radius) {
-    ctx.beginPath();
-    ctx.moveTo(x+radius, y);
-    ctx.arcTo(x+width, y, x+width, y+height, radius);
-    ctx.arcTo(x+width, y+height, x, y+height, radius);
-    ctx.arcTo(x, y+height, x, y, radius);
-    ctx.arcTo(x, y, x+width, y, radius);
-    ctx.closePath();
-  }
-
-  function wrapDrawText(ctx, text, x, y, maxWidth, lineHeight) {
-    const words = text.split(' ');
-    let line = '';
-    for (let n = 0; n < words.length; n++) {
-      const testLine = line + words[n] + ' ';
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && n > 0) {
-        ctx.fillText(line, x, y);
-        line = words[n] + ' ';
-        y += lineHeight;
-      } else {
-        line = testLine;
-      }
-    }
-    ctx.fillText(line, x, y);
   }
 
   function renderRiddles() {
@@ -386,15 +342,19 @@
     const inp = document.getElementById('answer' + id);
     const fb = document.getElementById('feedback' + id);
     if (!inp) return;
+    
     let val = (inp.value || '').trim();
     val = stripZeroWidth(val);
+    
     if (!val) {
       fb.style.color = '#ff4444';
       fb.textContent = 'Please type an answer.';
       return;
     }
+    
     const first = val[0].toUpperCase();
     const expected = riddles.find(r => r.id === id).answer.toUpperCase();
+    
     if (first === expected) {
       solved[id] = true;
       fb.style.color = '#00cc66';
@@ -422,6 +382,7 @@
     const codeInput = document.getElementById('codeInput');
     const res = document.getElementById('result');
     const entered = stripZeroWidth((codeInput.value || '').trim().toUpperCase());
+    
     if (!entered) {
       res.style.color = '#ff8c00';
       res.textContent = 'Enter the 5-letter code to escape!';
@@ -432,6 +393,7 @@
       res.textContent = 'Code must be 5 letters.';
       return;
     }
+    
     const target = getFinalCode();
     if (entered === target) {
       res.style.color = '#00cc66';
@@ -450,11 +412,13 @@
   document.getElementById('hintBtn').addEventListener('click', () => {
     const rn = prompt('Which riddle do you want a hint for? (1-5)');
     const hb = document.getElementById('hintBox');
+    
     if (!rn) {
       hb.style.display = 'none'; 
       hb.innerHTML = '';
       return;
     }
+    
     const n = parseInt(rn);
     if (hints[n]) {
       hb.style.display = 'block';
@@ -465,6 +429,7 @@
     }
   });
 
+  // Anti-cheat measures
   document.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     return false;
@@ -492,6 +457,7 @@
     input.style.webkitUserSelect = 'text';
   });
 
+  // Tab switch detection
   document.addEventListener('visibilitychange', () => {
     if (isLocked) return;
     
@@ -499,37 +465,27 @@
       tabSwitchCount++;
       
       if (tabSwitchCount >= 5) {
-        lockPagePermanently(tabSwitchCount, false);
+        lockPage();
       }
     } else {
       if (tabSwitchCount === 1 && !firstWarningShown) {
-        showTabSwitchWarning();
+        showWarning(
+          '⚠️ WARNING ⚠️',
+          `Tab switching detected!<br><br>Using external help (like ChatGPT) defeats the purpose of this puzzle.<br><br>Try to solve it yourself! 🧠`,
+          `Switches detected: ${tabSwitchCount}<br><strong style="color: #ff4444;">After 5 switches, the page will be PERMANENTLY LOCKED!</strong>`
+        );
         firstWarningShown = true;
       } else if (tabSwitchCount >= 3 && tabSwitchCount < 5) {
-        showSevereWarning();
+        showWarning(
+          '🚨 FINAL WARNING 🚨',
+          `You have switched tabs ${tabSwitchCount} times!<br><br>One more switch and the page will be PERMANENTLY LOCKED!<br><br><strong style="color: #ff0000;">Even refreshing won't help!</strong>`,
+          `Switches remaining: ${5 - tabSwitchCount}`
+        );
       }
     }
   });
 
-  function showTabSwitchWarning() {
-    const overlay = createWarningOverlay(
-      '⚠️ WARNING ⚠️',
-      `Tab switching detected!<br><br>Using external help (like ChatGPT) defeats the purpose of this puzzle.<br><br>Try to solve it yourself! 🧠`,
-      `Switches detected: ${tabSwitchCount}<br><strong style="color: #ff4444;">After 5 switches, the exam will be PERMANENTLY LOCKED!</strong>`
-    );
-    document.body.appendChild(overlay);
-  }
-
-  function showSevereWarning() {
-    const overlay = createWarningOverlay(
-      '🚨 FINAL WARNING 🚨',
-      `You have switched tabs ${tabSwitchCount} times!<br><br>One more switch and the page will be PERMANENTLY LOCKED!<br><br><strong style="color: #ff0000;">Even refreshing won't help!</strong>`,
-      `Switches remaining: ${5 - tabSwitchCount}`
-    );
-    document.body.appendChild(overlay);
-  }
-
-  function createWarningOverlay(title, message, footer) {
+  function showWarning(title, message, footer) {
     const overlay = document.createElement('div');
     overlay.style.cssText = `
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -563,20 +519,28 @@
     `;
 
     overlay.appendChild(warningBox);
+    document.body.appendChild(overlay);
     
     const btn = warningBox.querySelector('#acknowledgeBtn');
     btn.onclick = () => overlay.remove();
-
-    return overlay;
   }
 
-  function lockPagePermanently(count, isReload) {
+  async function lockPage() {
     isLocked = true;
     
-    // Save to storage if not already from reload
-    if (!isReload) {
-      saveLockStatus(count);
+    // Save to storage
+    try {
+      await window.storage.set('dungeon_locked', 'true', false);
+      await window.storage.set('tab_switch_count', tabSwitchCount.toString(), false);
+    } catch (e) {
+      console.error('Failed to save lock:', e);
     }
+    
+    showPermanentLock(tabSwitchCount);
+  }
+
+  function showPermanentLock(count) {
+    isLocked = true;
     
     const overlay = document.createElement('div');
     overlay.style.cssText = `
@@ -599,8 +563,7 @@
       <p style="color: #ffaa66; font-size: 1.3rem; margin-bottom: 20px; line-height: 1.8; font-family: sans-serif;">
         You have been caught switching tabs too many times!<br><br>
         The dungeon is now <strong style="color: #ff0000;">PERMANENTLY LOCKED</strong>.<br><br>
-        Refreshing the page will not help.<br><br>
-        ${isReload ? 'You cannot access this puzzle anymore.' : 'This lock persists across page reloads.'}
+        Refreshing the page will not help.
       </p>
       <p style="color: #ff8c00; font-size: 1rem; font-family: sans-serif; font-style: italic; margin-top: 30px;">
         Tab switches detected: ${count}
@@ -613,24 +576,18 @@
     overlay.appendChild(lockBox);
     document.body.appendChild(overlay);
     
-    // Disable all inputs
     document.querySelectorAll('input, button').forEach(el => {
       el.disabled = true;
     });
   }
 
-  // Initialize - check if locked first
+  // Initialize
   async function init() {
-    const locked = await checkLockStatus();
-    if (!locked) {
+    const wasLocked = await checkInitialLock();
+    
+    if (!wasLocked) {
+      renderRiddles();
       updateProgressDisplay();
-      
-      // Clear console periodically
-      setInterval(() => {
-        if (typeof console !== 'undefined' && console.clear) {
-          console.clear();
-        }
-      }, 1000);
     }
   }
 
