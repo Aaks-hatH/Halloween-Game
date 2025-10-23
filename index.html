@@ -90,358 +90,319 @@
 </div>
 
 <script>
-/*
-  Classroom-friendly Locked Dungeon (client-only)
-  - Riddles rendered to canvas (prevents easy copy/paste)
-  - Paste detection strips zero-width characters and warns
-  - Copy/select/context menu disabled to deter casual copying
-  - No obfuscation or malicious manipulation
-*/
-
-// Riddle set (text) — kept here as JS strings so we can draw them to canvas
-const riddles = [
-  {
-    id: 1,
-    title: 'Riddle 1',
-    text: `I have no body, but I can appear,
-I whisper in your ear, but vanish near.
-You'll feel my chill though I am air,
-What am I, haunting everywhere?`,
-    // correct answer initial letter char code (uppercase) -> 'G' for "GHOST"
-    answer: 'G'
-  },
-  {
-    id: 2,
-    title: 'Riddle 2',
-    text: `I am full of ghosts, cobwebs, and fright,
-People visit me on Halloween night.
-Dark and spooky is my style,
-What am I?`,
-    answer: 'H' // "HAUNTED HOUSE" (H)
-  },
-  {
-    id: 3,
-    title: 'Riddle 3',
-    text: `Round and hollow, dark my core,
-I open wide but have no door.
-Without me, faces cannot see
-What letter am I meant to be?
-(Hint: The letter is a Shape)`,
-    answer: 'O' // 'O'
-  },
-  {
-    id: 4,
-    title: 'Riddle 4',
-    text: `Neither living nor quite dead,
-I rise again when moonlight's shed.
-I shamble slow, with vacant hue
-Guess my name.`,
-    answer: 'Z' // 'ZOMBIE' (Z)
-  },
-  {
-    id: 5,
-    title: 'Riddle 5',
-    text: `I live inside a haunted flame,
-Without me, dark would rule the game.
-I flicker soft, I guard your soul
-What am I, with shining role?`,
-    answer: 'L' // 'LIGHT' / 'LANTERN' (L) — pick the intended first-letter used for code
-  }
-];
-
-// internal state
-const solved = {1:false,2:false,3:false,4:false,5:false};
-
-// helper: remove zero-width and similar invisible chars
-function stripZeroWidth(str) {
-  // common zero-width / BOM / joiner characters
-  return str.replace(/[\u200B\u200C\u200D\uFEFF\u2060]/g, '');
-}
-
-function containsZeroWidth(str) {
-  return /[\u200B\u200C\u200D\uFEFF\u2060]/.test(str);
-}
-
-/* --------------- Canvas rendering --------------- */
-function createRiddleCard(r) {
-  const card = document.createElement('div');
-  card.className = 'riddle-card';
-  card.id = 'card-' + r.id;
-
-  // Title
-  const h = document.createElement('h3');
-  h.textContent = r.title;
-  card.appendChild(h);
-
-  // Canvas element (riddle displayed as image)
-  const canvas = document.createElement('canvas');
-  canvas.className = 'riddle-canvas no-select';
-  // responsive width
-  const width = Math.min(760, Math.max(320, Math.floor(window.innerWidth * 0.85)));
-  const lineHeight = 26;
-  const padding = 18;
-  // estimate canvas height based on text lines
-  const lines = r.text.split('\n').length + 1;
-  const height = padding*2 + lines * lineHeight + 40;
-  canvas.width = width;
-  canvas.height = height;
-  canvas.style.width = width + 'px';
-  canvas.style.height = height + 'px';
-  canvas.setAttribute('aria-hidden','true'); // not selectable, decorative
-  card.appendChild(canvas);
-
-  // controls: input + submit
-  const controls = document.createElement('div');
-  controls.className = 'riddle-controls';
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.id = 'answer' + r.id;
-  input.placeholder = 'Your answer';
-  input.autocomplete = 'off';
-  input.spellcheck = false;
-  input.setAttribute('aria-label','Answer for ' + r.title);
-
-  // paste handling: strip zero-width characters and warn on long paste
-  input.addEventListener('paste', (ev) => {
-    ev.preventDefault();
-    const pasted = (ev.clipboardData || window.clipboardData).getData('text') || '';
-    const cleaned = stripZeroWidth(pasted);
-    if (containsZeroWidth(pasted)) {
-      alert('Notice: Invisible characters were removed from your pasted text.');
+(function() {
+  'use strict';
+  
+  // Encoded data - riddles and answers stored as base64 to prevent easy viewing
+  const encodedData = 'W3siaWQiOjEsInRpdGxlIjoiUmlkZGxlIDEiLCJ0ZXh0IjoiSSBoYXZlIG5vIGJvZHksIGJ1dCBJIGNhbiBhcHBlYXIsXG5JIHdoaXNwZXIgaW4geW91ciBlYXIsIGJ1dCB2YW5pc2ggbmVhci5cblxuWW91J2xsIGZlZWwgbXkgY2hpbGwgdGhvdWdoIEkgYW0gYWlyLFxuV2hhdCBhbSBJLCBoYXVudGluZyBldmVyeXdoZXJlPyIsImFuc3dlciI6IkcifSx7ImlkIjoyLCJ0aXRsZSI6IlJpZGRsZSAyIiwidGV4dCI6IkkgYW0gZnVsbCBvZiBnaG9zdHMsIGNvYndlYnMsIGFuZCBmcmlnaHQsXG5QZW9wbGUgdmlzaXQgbWUgb24gSGFsbG93ZWVuIG5pZ2h0LlxuRGFyayBhbmQgc3Bvb2t5IGlzIG15IHN0eWxlLFxuV2hhdCBhbSBJPyIsImFuc3dlciI6IkgifSx7ImlkIjozLCJ0aXRsZSI6IlJpZGRsZSAzIiwidGV4dCI6IlJvdW5kIGFuZCBob2xsb3csIGRhcmsgbXkgY29yZSxcbkkgb3BlbiB3aWRlIGJ1dCBoYXZlIG5vIGRvb3IuXG5XaXRob3V0IG1lLCBmYWNlcyBjYW5ub3Qgc2VlXG5XaGF0IGxldHRlciBhbSBJIG1lYW50IHRvIGJlP1xuKEhpbnQ6IFRoZSBsZXR0ZXIgaXMgYSBTaGFwZSkiLCJhbnN3ZXIiOiJPIn0seyJpZCI6NCwidGl0bGUiOiJSaWRkbGUgNCIsInRleHQiOiJOZWl0aGVyIGxpdmluZyBub3IgcXVpdGUgZGVhZCxcbkkgcmlzZSBhZ2FpbiB3aGVuIG1vb25saWdodCdzIHNoZWQuXG5JIHNoYW1ibGUgc2xvdywgd2l0aCB2YWNhbnQgaHVlXG5HdWVzcyBteSBuYW1lLiIsImFuc3dlciI6IloifSx7ImlkIjo1LCJ0aXRsZSI6IlJpZGRsZSA1IiwidGV4dCI6IkkgbGl2ZSBpbnNpZGUgYSBoYXVudGVkIGZsYW1lLFxuV2l0aG91dCBtZSwgZGFyayB3b3VsZCBydWxlIHRoZSBnYW1lLlxuSSBmbGlja2VyIHNvZnQsIEkgZ3VhcmQgeW91ciBzb3VsXG5XaGF0IGFtIEksIHdpdGggc2hpbmluZyByb2xlPyIsImFuc3dlciI6IkwifV0=';
+  
+  const encodedHints = 'eyIxIjoiVGhpbmsgb2YgYSBjaGlsbGluZyBwcmVzZW5jZSB0aGF0IGhhcyBubyBwaHlzaWNhbCBib2R5LiIsIjIiOiJBIHBsYWNlIHBlb3BsZSBoYXVudCBvbiBIYWxsb3dlZW4g4oCUIHR3byB3b3Jkcywgc3RhcnRzIHdpdGggSC4iLCIzIjoiQSByb3VuZCBsZXR0ZXIgdGhhdCBpcyBhbHNvIGEgc2hhcGUuIiwiNCI6IkFuIHVuZGVhZCBjcmVhdHVyZSB0aGF0IHNoYW1ibGVzIGFuZCBtb2Fucy4iLCI1IjoiQSBzb3VyY2Ugb2YgbGlnaHQgdGhhdCBrZWVwcyB0aGUgZGFyayBhd2F5IOKAlCBzdGFydHMgd2l0aCBMLiJ9';
+  
+  // Decode function
+  function decode(str) {
+    try {
+      return JSON.parse(atob(str));
+    } catch(e) {
+      return null;
     }
-    if (cleaned.length > 60) {
-      alert('Pasting long text is discouraged during this assessment. Please type your answer.');
+  }
+  
+  const riddles = decode(encodedData);
+  const hints = decode(encodedHints);
+  
+  if (!riddles || !hints) {
+    document.body.innerHTML = '<h1>Error loading puzzle</h1>';
+    return;
+  }
+
+  // Internal state
+  const solved = {1:false,2:false,3:false,4:false,5:false};
+
+  // Helper: remove zero-width and similar invisible chars
+  function stripZeroWidth(str) {
+    return str.replace(/[\u200B\u200C\u200D\uFEFF\u2060]/g, '');
+  }
+
+  function containsZeroWidth(str) {
+    return /[\u200B\u200C\u200D\uFEFF\u2060]/.test(str);
+  }
+
+  /* --------------- Canvas rendering --------------- */
+  function createRiddleCard(r) {
+    const card = document.createElement('div');
+    card.className = 'riddle-card';
+    card.id = 'card-' + r.id;
+
+    // Title
+    const h = document.createElement('h3');
+    h.textContent = r.title;
+    card.appendChild(h);
+
+    // Canvas element (riddle displayed as image)
+    const canvas = document.createElement('canvas');
+    canvas.className = 'riddle-canvas no-select';
+    const width = Math.min(760, Math.max(320, Math.floor(window.innerWidth * 0.85)));
+    const lineHeight = 26;
+    const padding = 18;
+    const lines = r.text.split('\n').length + 1;
+    const height = padding*2 + lines * lineHeight + 40;
+    canvas.width = width;
+    canvas.height = height;
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    canvas.setAttribute('aria-hidden','true');
+    card.appendChild(canvas);
+
+    // Controls: input + submit
+    const controls = document.createElement('div');
+    controls.className = 'riddle-controls';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'answer' + r.id;
+    input.placeholder = 'Your answer';
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+    input.setAttribute('aria-label','Answer for ' + r.title);
+
+    // Prevent paste completely
+    input.addEventListener('paste', (ev) => {
+      ev.preventDefault();
+      alert('Pasting is disabled. Please type your answer.');
+    });
+
+    // Prevent copy
+    input.addEventListener('copy', (ev) => {
+      ev.preventDefault();
+    });
+
+    // Prevent cut
+    input.addEventListener('cut', (ev) => {
+      ev.preventDefault();
+    });
+
+    const submit = document.createElement('button');
+    submit.textContent = 'Submit';
+    submit.type = 'button';
+    submit.onclick = () => checkRiddle(r.id);
+
+    const feedback = document.createElement('div');
+    feedback.id = 'feedback' + r.id;
+    feedback.style.minHeight = '22px';
+    feedback.style.marginTop = '10px';
+    feedback.style.color = '#ff8c00';
+
+    controls.appendChild(input);
+    controls.appendChild(submit);
+    card.appendChild(controls);
+    card.appendChild(feedback);
+
+    drawRiddleOnCanvas(canvas, r.title, r.text);
+
+    return card;
+  }
+
+  function drawRiddleOnCanvas(canvas, title, text) {
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.strokeStyle = 'rgba(255,140,0,0.18)';
+    ctx.lineWidth = 2;
+    roundRect(ctx, 2, 2, canvas.width-4, canvas.height-4, 10);
+    ctx.stroke();
+
+    ctx.fillStyle = '#ff8c00';
+    const titleSize = Math.min(28, Math.floor(canvas.width / 22));
+    ctx.font = `bold ${titleSize}px Creepster, sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.fillText(title, 20, 38);
+
+    ctx.fillStyle = '#ffb366';
+    const fontSize = Math.min(18, Math.floor(canvas.width / 40));
+    ctx.font = `${fontSize}px sans-serif`;
+    const x = 20;
+    let y = 64;
+    const maxWidth = canvas.width - 40;
+    const lines = text.split('\n');
+    for (const line of lines) {
+      wrapDrawText(ctx, line, x, y, maxWidth, fontSize + 8);
+      y += (fontSize + 8) * (Math.ceil(ctx.measureText(line).width / maxWidth) || 1);
+    }
+
+    ctx.font = '20px serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.fillText('🕸️', canvas.width - 46, 36);
+  }
+
+  function roundRect(ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x+radius, y);
+    ctx.arcTo(x+width, y, x+width, y+height, radius);
+    ctx.arcTo(x+width, y+height, x, y+height, radius);
+    ctx.arcTo(x, y+height, x, y, radius);
+    ctx.arcTo(x, y, x+width, y, radius);
+    ctx.closePath();
+  }
+
+  function wrapDrawText(ctx, text, x, y, maxWidth, lineHeight) {
+    const words = text.split(' ');
+    let line = '';
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && n > 0) {
+        ctx.fillText(line, x, y);
+        line = words[n] + ' ';
+        y += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, x, y);
+  }
+
+  /* --------------- Append all riddle cards --------------- */
+  const container = document.getElementById('riddleContainer');
+  riddles.forEach(r => {
+    container.appendChild(createRiddleCard(r));
+  });
+
+  /* --------------- Checking logic --------------- */
+  function updateProgressDisplay() {
+    const solvedCount = Object.values(solved).filter(Boolean).length;
+    const pct = (solvedCount/5) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressFill').textContent = `${solvedCount}/5`;
+    document.getElementById('progressText').textContent = `${solvedCount} / 5 solved`;
+  }
+
+  function checkRiddle(id) {
+    const inp = document.getElementById('answer' + id);
+    const fb = document.getElementById('feedback' + id);
+    if (!inp) return;
+    let val = (inp.value || '').trim();
+    val = stripZeroWidth(val);
+    if (!val) {
+      fb.style.color = '#ff4444';
+      fb.textContent = 'Please type an answer.';
       return;
     }
-    // insert cleaned text at caret
-    const start = input.selectionStart || 0;
-    const end = input.selectionEnd || 0;
-    const val = input.value;
-    input.value = val.slice(0,start) + cleaned + val.slice(end);
-  });
-
-  // keyboard: strip zero-width when leaving field
-  input.addEventListener('blur', () => {
-    input.value = stripZeroWidth(input.value);
-  });
-
-  const submit = document.createElement('button');
-  submit.textContent = 'Submit';
-  submit.type = 'button';
-  submit.onclick = () => checkRiddle(r.id);
-
-  const feedback = document.createElement('div');
-  feedback.id = 'feedback' + r.id;
-  feedback.style.minHeight = '22px';
-  feedback.style.marginTop = '10px';
-  feedback.style.color = '#ff8c00';
-
-  controls.appendChild(input);
-  controls.appendChild(submit);
-  card.appendChild(controls);
-  card.appendChild(feedback);
-
-  // render canvas text
-  drawRiddleOnCanvas(canvas, r.title, r.text);
-
-  return card;
-}
-
-function drawRiddleOnCanvas(canvas, title, text) {
-  const ctx = canvas.getContext('2d');
-  // background
-  ctx.fillStyle = '#0a0a0a';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  // subtle border
-  ctx.strokeStyle = 'rgba(255,140,0,0.18)';
-  ctx.lineWidth = 2;
-  roundRect(ctx, 2, 2, canvas.width-4, canvas.height-4, 10);
-  ctx.stroke();
-
-  // title
-  ctx.fillStyle = '#ff8c00';
-  const titleSize = Math.min(28, Math.floor(canvas.width / 22));
-  ctx.font = `bold ${titleSize}px Creepster, sans-serif`;
-  ctx.textAlign = 'left';
-  ctx.fillText(title, 20, 38);
-
-  // draw text with word wrap
-  ctx.fillStyle = '#ffb366';
-  const fontSize = Math.min(18, Math.floor(canvas.width / 40));
-  ctx.font = `${fontSize}px sans-serif`;
-  const x = 20;
-  let y = 64;
-  const maxWidth = canvas.width - 40;
-  const lines = text.split('\n');
-  for (const line of lines) {
-    wrapDrawText(ctx, line, x, y, maxWidth, fontSize + 8);
-    y += (fontSize + 8) * (Math.ceil(ctx.measureText(line).width / maxWidth) || 1);
-  }
-
-  // small decorative ghost-like icon in corner (not selectable)
-  ctx.font = '20px serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.08)';
-  ctx.fillText('🕸️', canvas.width - 46, 36);
-}
-
-// helper: rounded rect path
-function roundRect(ctx, x, y, width, height, radius) {
-  ctx.beginPath();
-  ctx.moveTo(x+radius, y);
-  ctx.arcTo(x+width, y, x+width, y+height, radius);
-  ctx.arcTo(x+width, y+height, x, y+height, radius);
-  ctx.arcTo(x, y+height, x, y, radius);
-  ctx.arcTo(x, y, x+width, y, radius);
-  ctx.closePath();
-}
-
-// helper: wrapped/drawn text
-function wrapDrawText(ctx, text, x, y, maxWidth, lineHeight) {
-  const words = text.split(' ');
-  let line = '';
-  for (let n = 0; n < words.length; n++) {
-    const testLine = line + words[n] + ' ';
-    const metrics = ctx.measureText(testLine);
-    if (metrics.width > maxWidth && n > 0) {
-      ctx.fillText(line, x, y);
-      line = words[n] + ' ';
-      y += lineHeight;
+    const first = val[0].toUpperCase();
+    const expected = riddles.find(r => r.id === id).answer.toUpperCase();
+    if (first === expected) {
+      solved[id] = true;
+      fb.style.color = '#00cc66';
+      fb.textContent = '✓ Correct — nice work.';
+      inp.disabled = true;
+      const card = document.getElementById('card-' + id);
+      if (card) card.style.borderColor = 'rgba(0,255,0,0.18)';
+      updateProgressDisplay();
     } else {
-      line = testLine;
+      fb.style.color = '#ff4444';
+      fb.textContent = '✗ Incorrect — try again.';
+      setTimeout(() => { fb.textContent = ''; }, 3000);
     }
   }
-  ctx.fillText(line, x, y);
-}
 
-/* --------------- Append all riddle cards --------------- */
-const container = document.getElementById('riddleContainer');
-riddles.forEach(r => {
-  container.appendChild(createRiddleCard(r));
-});
-
-/* --------------- Checking logic --------------- */
-function updateProgressDisplay() {
-  const solvedCount = Object.values(solved).filter(Boolean).length;
-  const pct = (solvedCount/5) * 100;
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressFill').textContent = `${solvedCount}/5`;
-  document.getElementById('progressText').textContent = `${solvedCount} / 5 solved`;
-}
-
-function checkRiddle(id) {
-  const inp = document.getElementById('answer' + id);
-  const fb = document.getElementById('feedback' + id);
-  if (!inp) return;
-  let val = (inp.value || '').trim();
-  val = stripZeroWidth(val);
-  if (!val) {
-    fb.style.color = '#ff4444';
-    fb.textContent = 'Please type an answer (no copy/paste).';
-    return;
+  /* --------------- Code checking --------------- */
+  function getFinalCode() {
+    return riddles.map(r => r.answer[0].toUpperCase()).join('');
   }
-  // check first letter uppercase
-  const first = val[0].toUpperCase();
-  const expected = riddles.find(r => r.id === id).answer.toUpperCase();
-  if (first === expected) {
-    solved[id] = true;
-    fb.style.color = '#00cc66';
-    fb.textContent = '✓ Correct — nice work.';
-    inp.disabled = true;
-    // mark card visually
-    const card = document.getElementById('card-' + id);
-    if (card) card.style.borderColor = 'rgba(0,255,0,0.18)';
-    updateProgressDisplay();
-  } else {
-    fb.style.color = '#ff4444';
-    fb.textContent = '✗ Incorrect — try again (type, do not paste).';
-    setTimeout(() => { fb.textContent = ''; }, 3000);
-  }
-}
 
-/* --------------- Code checking --------------- */
-function getFinalCode() {
-  // final code is first letters of solutions in order (as specified in riddles.answer)
-  return riddles.map(r => r.answer[0].toUpperCase()).join('');
-}
+  document.getElementById('unlockBtn').addEventListener('click', () => {
+    const codeInput = document.getElementById('codeInput');
+    const res = document.getElementById('result');
+    const entered = stripZeroWidth((codeInput.value || '').trim().toUpperCase());
+    if (!entered) {
+      res.style.color = '#ff8c00';
+      res.textContent = 'Enter the 5-letter code to escape!';
+      return;
+    }
+    if (entered.length !== 5) {
+      res.style.color = '#ff4444';
+      res.textContent = 'Code must be 5 letters.';
+      return;
+    }
+    const target = getFinalCode();
+    if (entered === target) {
+      res.style.color = '#00cc66';
+      res.textContent = 'You have escaped the dungeon! The spirits bow to your wisdom.';
+    } else {
+      res.style.color = '#ff4444';
+      res.textContent = 'Wrong code... The dungeon remains locked.';
+    }
+  });
 
-document.getElementById('unlockBtn').addEventListener('click', () => {
-  const codeInput = document.getElementById('codeInput');
-  const res = document.getElementById('result');
-  const entered = stripZeroWidth((codeInput.value || '').trim().toUpperCase());
-  if (!entered) {
-    res.style.color = '#ff8c00';
-    res.textContent = 'Enter the 5-letter code to escape!';
-    return;
-  }
-  if (entered.length !== 5) {
-    res.style.color = '#ff4444';
-    res.textContent = 'Code must be 5 letters.';
-    return;
-  }
-  const target = getFinalCode();
-  if (entered === target) {
-    res.style.color = '#00cc66';
-    res.textContent = 'You have escaped the dungeon! The spirits bow to your wisdom.';
-  } else {
-    res.style.color = '#ff4444';
-    res.textContent = 'Wrong code... The dungeon remains locked.';
-  }
-});
+  // Prevent paste on code input too
+  document.getElementById('codeInput').addEventListener('paste', (ev) => {
+    ev.preventDefault();
+    alert('Pasting is disabled. Please type your answer.');
+  });
 
-/* --------------- Hints --------------- */
-const hints = {
-  1: "Think of a chilling presence that has no physical body.",
-  2: "A place people haunt on Halloween — two words, starts with H.",
-  3: "A round letter that is also a shape.",
-  4: "An undead creature that shambles — starts with Z.",
-  5: "A source of light that keeps the dark away — starts with L."
-};
+  /* --------------- Hints --------------- */
+  document.getElementById('hintBtn').addEventListener('click', () => {
+    const rn = prompt('Which riddle do you want a hint for? (1-5) — enter a number');
+    const hb = document.getElementById('hintBox');
+    if (!rn) {
+      hb.style.display = 'none'; 
+      hb.innerHTML = '';
+      return;
+    }
+    const n = parseInt(rn);
+    if (hints[n]) {
+      hb.style.display = 'block';
+      hb.innerHTML = `<p class="no-select">💡 Hint for Riddle ${n}: ${hints[n]}</p>`;
+    } else {
+      hb.style.display = 'block';
+      hb.innerHTML = `<p class="no-select">That riddle doesn't exist — try a number from 1 to 5.</p>`;
+    }
+  });
 
-document.getElementById('hintBtn').addEventListener('click', () => {
-  const rn = prompt('Which riddle do you want a hint for? (1-5) — enter a number');
-  const hb = document.getElementById('hintBox');
-  if (!rn) {
-    hb.style.display = 'none'; hb.innerHTML = '';
-    return;
-  }
-  const n = parseInt(rn);
-  if (hints[n]) {
-    hb.style.display = 'block';
-    // show hint text but keep it non-selectable to deter direct copy
-    hb.innerHTML = `<p class="no-select">💡 Hint for Riddle ${n}: ${hints[n]}</p>`;
-  } else {
-    hb.style.display = 'block';
-    hb.innerHTML = `<p class="no-select">That riddle doesn't exist — try a number from 1 to 5.</p>`;
-  }
-});
-
-/* --------------- Basic anti-copy deterrents --------------- */
-// disable selection/contextmenu/copy on page for riddle text areas
-document.addEventListener('contextmenu', (e) => {
-  // allow context menu in inputs (so students can paste normally if permitted)
-  if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
-  e.preventDefault();
-});
-// prevent Ctrl+C selection copying via keyboard shortcuts on non-inputs
-document.addEventListener('keydown', (e) => {
-  const blocked = (e.ctrlKey && (e.key === 'c' || e.key === 'C')) || (e.key === 'F12');
-  if (blocked && e.target.tagName.toLowerCase() !== 'input' && e.target.tagName.toLowerCase() !== 'textarea') {
+  /* --------------- Enhanced anti-copy/paste deterrents --------------- */
+  // Disable right-click context menu
+  document.addEventListener('contextmenu', (e) => {
     e.preventDefault();
-    alert('Copying is disabled for this assessment. Please type your answers.');
-  }
-});
+    return false;
+  });
 
-// update progress on load (in case)
-updateProgressDisplay();
+  // Prevent keyboard shortcuts for copy, cut, view source, and dev tools
+  document.addEventListener('keydown', (e) => {
+    // Prevent Ctrl+C, Ctrl+X, Ctrl+U, F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
+    if (
+      (e.ctrlKey && (e.key === 'c' || e.key === 'C')) ||
+      (e.ctrlKey && (e.key === 'x' || e.key === 'X')) ||
+      (e.ctrlKey && (e.key === 'u' || e.key === 'U')) ||
+      (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I')) ||
+      (e.ctrlKey && e.shiftKey && (e.key === 'j' || e.key === 'J')) ||
+      (e.ctrlKey && e.shiftKey && (e.key === 'c' || e.key === 'C')) ||
+      e.key === 'F12'
+    ) {
+      e.preventDefault();
+      return false;
+    }
+  });
 
-/* --------------- Accessibility note --------------- */
-/*
-  Because the riddles are drawn to canvas (non-selectable), we also include
-  the titles/semantics as normal DOM where necessary (aria-hidden on canvas).
-  If you need accessible text for screen readers, add visually-hidden text
-  alternative that does not display on the page but is available to SRs.
-*/
+  // Disable text selection on the entire page
+  document.body.style.userSelect = 'none';
+  document.body.style.webkitUserSelect = 'none';
+  document.body.style.mozUserSelect = 'none';
+  document.body.style.msUserSelect = 'none';
+
+  // But allow selection in input fields
+  const inputs = document.querySelectorAll('input[type="text"]');
+  inputs.forEach(input => {
+    input.style.userSelect = 'text';
+    input.style.webkitUserSelect = 'text';
+  });
+
+  updateProgressDisplay();
+
+  // Clear console periodically to remove any accidentally logged data
+  setInterval(() => {
+    console.clear();
+  }, 1000);
+
+})();
 </script>
 </body>
 </html>
