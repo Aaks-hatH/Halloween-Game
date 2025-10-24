@@ -467,32 +467,38 @@
 (function() {
   'use strict';
   
-  const ADMIN_USERNAME = 'Aaks-hatH';
-  const ADMIN_PASSWORD = 'Aakshatadmin';
+  // Encrypted credentials (Base64 encoded)
+  const ENCRYPTED_ADMIN_USER = atob('QWFrcy1oYXRI');
+  const ENCRYPTED_ADMIN_PASS = atob('QWFrc2hhdGFkbWlu');
   let isAdminAuthenticated = false;
   
-  // Riddles data
+  // Decrypt function for answers
+  function decrypt(encoded) {
+    return atob(encoded);
+  }
+  
+  // Riddles data (answers encrypted)
   const riddlesByDifficulty = {
     easy: [
-      {id: 1, title: "Riddle 1", text: "I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?", answer: "G"},
-      {id: 2, title: "Riddle 2", text: "I am full of ghosts, cobwebs, and fright,\nPeople visit me on Halloween night.\nDark and spooky is my style,\nWhat am I?", answer: "H"},
-      {id: 3, title: "Riddle 3", text: "Round and hollow, dark my core,\nI open wide but have no door.\nWithout me, faces cannot see\nWhat letter am I meant to be?\n(Hint: The letter is a Shape)", answer: "O"},
-      {id: 4, title: "Riddle 4", text: "Neither living nor quite dead,\nI rise again when moonlight's shed.\nI shamble slow, with vacant hue\nGuess my name.", answer: "U"},
-      {id: 5, title: "Riddle 5", text: "I live inside a haunted flame,\nWithout me, dark would rule the game.\nI flicker soft, I guard your soul\nWhat am I, with shining role?", answer: "L"}
+      {id: 1, title: "Riddle 1", text: "I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?", answer: decrypt('Rw==')},
+      {id: 2, title: "Riddle 2", text: "I am full of ghosts, cobwebs, and fright,\nPeople visit me on Halloween night.\nDark and spooky is my style,\nWhat am I?", answer: decrypt('SA==')},
+      {id: 3, title: "Riddle 3", text: "Round and hollow, dark my core,\nI open wide but have no door.\nWithout me, faces cannot see\nWhat letter am I meant to be?\n(Hint: The letter is a Shape)", answer: decrypt('Tw==')},
+      {id: 4, title: "Riddle 4", text: "Neither living nor quite dead,\nI rise again when moonlight's shed.\nI shamble slow, with vacant hue\nGuess my name.", answer: decrypt('VQ==')},
+      {id: 5, title: "Riddle 5", text: "I live inside a haunted flame,\nWithout me, dark would rule the game.\nI flicker soft, I guard your soul\nWhat am I, with shining role?", answer: decrypt('TA==')}
     ],
     medium: [
-      {id: 1, title: "Riddle 1", text: "I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?", answer: "G"},
-      {id: 2, title: "Riddle 2", text: "I am full of ghosts, cobwebs, and fright,\nPeople visit me on Halloween night.\nDark and spooky is my style,\nWhat am I?", answer: "H"},
-      {id: 3, title: "Riddle 3", text: "Round and hollow, dark my core,\nI open wide but have no door.\nWithout me, faces cannot see\nWhat letter am I meant to be?", answer: "O"},
-      {id: 4, title: "Riddle 4", text: "Neither living nor quite dead,\nI rise again when moonlight's shed.\nI shamble slow, with vacant hue\nGuess my name.", answer: "U"},
-      {id: 5, title: "Riddle 5", text: "I live inside a haunted flame,\nWithout me, dark would rule the game.\nI flicker soft, I guard your soul\nWhat am I, with shining role?", answer: "L"}
+      {id: 1, title: "Riddle 1", text: "I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?", answer: decrypt('Rw==')},
+      {id: 2, title: "Riddle 2", text: "I am full of ghosts, cobwebs, and fright,\nPeople visit me on Halloween night.\nDark and spooky is my style,\nWhat am I?", answer: decrypt('SA==')},
+      {id: 3, title: "Riddle 3", text: "Round and hollow, dark my core,\nI open wide but have no door.\nWithout me, faces cannot see\nWhat letter am I meant to be?", answer: decrypt('Tw==')},
+      {id: 4, title: "Riddle 4", text: "Neither living nor quite dead,\nI rise again when moonlight's shed.\nI shamble slow, with vacant hue\nGuess my name.", answer: decrypt('VQ==')},
+      {id: 5, title: "Riddle 5", text: "I live inside a haunted flame,\nWithout me, dark would rule the game.\nI flicker soft, I guard your soul\nWhat am I, with shining role?", answer: decrypt('TA==')}
     ],
     hard: [
-      {id: 1, title: "Riddle 1", text: "I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?", answer: "G"},
-      {id: 2, title: "Riddle 2", text: "I am full of ghosts, cobwebs, and fright,\nPeople visit me on Halloween night.\nDark and spooky is my style,\nWhat am I?", answer: "H"},
-      {id: 3, title: "Riddle 3", text: "Round and hollow, dark my core,\nI open wide but have no door.\nWithout me, faces cannot see\nWhat letter am I meant to be?", answer: "O"},
-      {id: 4, title: "Riddle 4", text: "Neither living nor quite dead,\nI rise again when moonlight's shed.\nI shamble slow, with vacant hue\nGuess my name.", answer: "U"},
-      {id: 5, title: "Riddle 5", text: "I live inside a haunted flame,\nWithout me, dark would rule the game.\nI flicker soft, I guard your soul\nWhat am I, with shining role?", answer: "L"}
+      {id: 1, title: "Riddle 1", text: "I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?", answer: decrypt('Rw==')},
+      {id: 2, title: "Riddle 2", text: "I am full of ghosts, cobwebs, and fright,\nPeople visit me on Halloween night.\nDark and spooky is my style,\nWhat am I?", answer: decrypt('SA==')},
+      {id: 3, title: "Riddle 3", text: "Round and hollow, dark my core,\nI open wide but have no door.\nWithout me, faces cannot see\nWhat letter am I meant to be?", answer: decrypt('Tw==')},
+      {id: 4, title: "Riddle 4", text: "Neither living nor quite dead,\nI rise again when moonlight's shed.\nI shamble slow, with vacant hue\nGuess my name.", answer: decrypt('VQ==')},
+      {id: 5, title: "Riddle 5", text: "I live inside a haunted flame,\nWithout me, dark would rule the game.\nI flicker soft, I guard your soul\nWhat am I, with shining role?", answer: decrypt('TA==')}
     ]
   };
   
@@ -1013,7 +1019,7 @@
 
   window.adminLogin = function() {
     const pass = sanitizeInput(document.getElementById('adminPassword').value);
-    if (pass === ADMIN_PASSWORD) {
+    if (pass === ENCRYPTED_ADMIN_PASS) {
       isAdminAuthenticated = true;
       document.getElementById('adminLogin').style.display = 'none';
       document.getElementById('adminContent').style.display = 'block';
