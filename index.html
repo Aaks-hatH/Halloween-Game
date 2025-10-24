@@ -255,13 +255,16 @@
   function checkInitialLock() {
     try {
       const locked = localStorage.getItem('dungeon_locked');
+      const count = localStorage.getItem('tab_switch_count');
+      console.log('Checking lock status:', locked, 'count:', count);
+      
       if (locked === 'true') {
-        const count = parseInt(localStorage.getItem('tab_switch_count') || '5');
-        showPermanentLock(count);
+        const switchCount = parseInt(count || '5');
+        console.log('Page is locked, showing lock screen');
+        showPermanentLock(switchCount);
         return true;
       }
     } catch (e) {
-      // localStorage not available or blocked
       console.error('Storage error:', e);
     }
     return false;
@@ -528,10 +531,10 @@
   async function lockPage() {
     isLocked = true;
     
-    // Save to storage
+    // Save to localStorage
     try {
-      await window.storage.set('dungeon_locked', 'true', false);
-      await window.storage.set('tab_switch_count', tabSwitchCount.toString(), false);
+      localStorage.setItem('dungeon_locked', 'true');
+      localStorage.setItem('tab_switch_count', tabSwitchCount.toString());
     } catch (e) {
       console.error('Failed to save lock:', e);
     }
@@ -568,6 +571,9 @@
       <p style="color: #ff8c00; font-size: 1rem; font-family: sans-serif; font-style: italic; margin-top: 30px;">
         Tab switches detected: ${count}
       </p>
+      <p style="color: #cc7700; font-size: 0.9rem; font-family: sans-serif; margin-top: 20px;">
+        To reset, you must clear your browser data for this site.
+      </p>
     `;
 
     overlay.appendChild(lockBox);
@@ -579,8 +585,8 @@
   }
 
   // Initialize
-  async function init() {
-    const wasLocked = await checkInitialLock();
+  function init() {
+    const wasLocked = checkInitialLock();
     
     if (!wasLocked) {
       renderRiddles();
