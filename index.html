@@ -129,7 +129,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 100;
+    z-index: 10002;
     font-size: 1.5rem;
     opacity: 0.5;
     transition: opacity 0.3s;
@@ -144,7 +144,7 @@
     border: 3px solid #ff8c00;
     border-radius: 20px;
     padding: 30px;
-    z-index: 10001;
+    z-index: 10003;
     max-width: 800px;
     max-height: 80vh;
     overflow-y: auto;
@@ -474,25 +474,25 @@
   // Riddles data
   const riddlesByDifficulty = {
     easy: [
-      {id: 1, title: "Riddle 1", text: "I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?", answer: "G", hints: 2},
-      {id: 2, title: "Riddle 2", text: "I am full of ghosts, cobwebs, and fright,\nPeople visit me on Halloween night.\nDark and spooky is my style,\nWhat am I?", answer: "H", hints: 2},
-      {id: 3, title: "Riddle 3", text: "Round and hollow, dark my core,\nI open wide but have no door.\nWithout me, faces cannot see\nWhat letter am I meant to be?\n(Hint: The letter is a Shape)", answer: "O", hints: 2},
-      {id: 4, title: "Riddle 4", text: "Neither living nor quite dead,\nI rise again when moonlight's shed.\nI shamble slow, with vacant hue\nGuess my name.", answer: "U", hints: 2},
-      {id: 5, title: "Riddle 5", text: "I live inside a haunted flame,\nWithout me, dark would rule the game.\nI flicker soft, I guard your soul\nWhat am I, with shining role?", answer: "L", hints: 2}
+      {id: 1, title: "Riddle 1", text: "I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?", answer: "G"},
+      {id: 2, title: "Riddle 2", text: "I am full of ghosts, cobwebs, and fright,\nPeople visit me on Halloween night.\nDark and spooky is my style,\nWhat am I?", answer: "H"},
+      {id: 3, title: "Riddle 3", text: "Round and hollow, dark my core,\nI open wide but have no door.\nWithout me, faces cannot see\nWhat letter am I meant to be?\n(Hint: The letter is a Shape)", answer: "O"},
+      {id: 4, title: "Riddle 4", text: "Neither living nor quite dead,\nI rise again when moonlight's shed.\nI shamble slow, with vacant hue\nGuess my name.", answer: "U"},
+      {id: 5, title: "Riddle 5", text: "I live inside a haunted flame,\nWithout me, dark would rule the game.\nI flicker soft, I guard your soul\nWhat am I, with shining role?", answer: "L"}
     ],
     medium: [
-      {id: 1, title: "Riddle 1", text: "I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?", answer: "G", hints: 1},
-      {id: 2, title: "Riddle 2", text: "I am full of ghosts, cobwebs, and fright,\nPeople visit me on Halloween night.\nDark and spooky is my style,\nWhat am I?", answer: "H", hints: 1},
-      {id: 3, title: "Riddle 3", text: "Round and hollow, dark my core,\nI open wide but have no door.\nWithout me, faces cannot see\nWhat letter am I meant to be?", answer: "O", hints: 1},
-      {id: 4, title: "Riddle 4", text: "Neither living nor quite dead,\nI rise again when moonlight's shed.\nI shamble slow, with vacant hue\nGuess my name.", answer: "U", hints: 1},
-      {id: 5, title: "Riddle 5", text: "I live inside a haunted flame,\nWithout me, dark would rule the game.\nI flicker soft, I guard your soul\nWhat am I, with shining role?", answer: "L", hints: 1}
+      {id: 1, title: "Riddle 1", text: "I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?", answer: "G"},
+      {id: 2, title: "Riddle 2", text: "I am full of ghosts, cobwebs, and fright,\nPeople visit me on Halloween night.\nDark and spooky is my style,\nWhat am I?", answer: "H"},
+      {id: 3, title: "Riddle 3", text: "Round and hollow, dark my core,\nI open wide but have no door.\nWithout me, faces cannot see\nWhat letter am I meant to be?", answer: "O"},
+      {id: 4, title: "Riddle 4", text: "Neither living nor quite dead,\nI rise again when moonlight's shed.\nI shamble slow, with vacant hue\nGuess my name.", answer: "U"},
+      {id: 5, title: "Riddle 5", text: "I live inside a haunted flame,\nWithout me, dark would rule the game.\nI flicker soft, I guard your soul\nWhat am I, with shining role?", answer: "L"}
     ],
     hard: [
-      {id: 1, title: "Riddle 1", text: "I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?", answer: "G", hints: 0},
-      {id: 2, title: "Riddle 2", text: "I am full of ghosts, cobwebs, and fright,\nPeople visit me on Halloween night.\nDark and spooky is my style,\nWhat am I?", answer: "H", hints: 0},
-      {id: 3, title: "Riddle 3", text: "Round and hollow, dark my core,\nI open wide but have no door.\nWithout me, faces cannot see\nWhat letter am I meant to be?", answer: "O", hints: 0},
-      {id: 4, title: "Riddle 4", text: "Neither living nor quite dead,\nI rise again when moonlight's shed.\nI shamble slow, with vacant hue\nGuess my name.", answer: "U", hints: 0},
-      {id: 5, title: "Riddle 5", text: "I live inside a haunted flame,\nWithout me, dark would rule the game.\nI flicker soft, I guard your soul\nWhat am I, with shining role?", answer: "L", hints: 0}
+      {id: 1, title: "Riddle 1", text: "I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?", answer: "G"},
+      {id: 2, title: "Riddle 2", text: "I am full of ghosts, cobwebs, and fright,\nPeople visit me on Halloween night.\nDark and spooky is my style,\nWhat am I?", answer: "H"},
+      {id: 3, title: "Riddle 3", text: "Round and hollow, dark my core,\nI open wide but have no door.\nWithout me, faces cannot see\nWhat letter am I meant to be?", answer: "O"},
+      {id: 4, title: "Riddle 4", text: "Neither living nor quite dead,\nI rise again when moonlight's shed.\nI shamble slow, with vacant hue\nGuess my name.", answer: "U"},
+      {id: 5, title: "Riddle 5", text: "I live inside a haunted flame,\nWithout me, dark would rule the game.\nI flicker soft, I guard your soul\nWhat am I, with shining role?", answer: "L"}
     ]
   };
   
@@ -512,25 +512,61 @@
   let startTime = null;
   let timerInterval = null;
   let hintsUsed = 0;
+  let totalHints = 0;
+  let hintsRemaining = 0;
   
   const solved = {1:false, 2:false, 3:false, 4:false, 5:false};
   let tabSwitchCount = 0;
   let firstWarningShown = false;
   let isLocked = false;
 
+  // Sanitize input to prevent injection attacks
+  function sanitizeInput(input) {
+    if (typeof input !== 'string') return '';
+    return input
+      .replace(/[<>"'`;&|*$(){}[\]]/g, '')
+      .trim()
+      .slice(0, 100);
+  }
+
+  function safeSetItem(key, value) {
+    try {
+      const sanitizedKey = sanitizeInput(key);
+      const sanitizedValue = typeof value === 'string' ? value : JSON.stringify(value);
+      localStorage.setItem(sanitizedKey, sanitizedValue);
+      return true;
+    } catch (e) {
+      console.error('Storage error:', e);
+      return false;
+    }
+  }
+
+  function safeGetItem(key) {
+    try {
+      const sanitizedKey = sanitizeInput(key);
+      return localStorage.getItem(sanitizedKey);
+    } catch (e) {
+      console.error('Storage error:', e);
+      return null;
+    }
+  }
+
   // Analytics
   function trackEvent(event, data = {}) {
     try {
-      const analytics = JSON.parse(localStorage.getItem('dungeon_analytics') || '{}');
-      if (!analytics[event]) analytics[event] = [];
-      analytics[event].push({...data, timestamp: Date.now()});
-      localStorage.setItem('dungeon_analytics', JSON.stringify(analytics));
-    } catch (e) {}
+      const sanitizedEvent = sanitizeInput(event);
+      const analytics = JSON.parse(safeGetItem('dungeon_analytics') || '{}');
+      if (!analytics[sanitizedEvent]) analytics[sanitizedEvent] = [];
+      analytics[sanitizedEvent].push({...data, timestamp: Date.now()});
+      safeSetItem('dungeon_analytics', JSON.stringify(analytics));
+    } catch (e) {
+      console.error('Analytics error:', e);
+    }
   }
 
   function getAnalytics() {
     try {
-      const analytics = JSON.parse(localStorage.getItem('dungeon_analytics') || '{}');
+      const analytics = JSON.parse(safeGetItem('dungeon_analytics') || '{}');
       const attempts = (analytics.attempt || []).length;
       const completions = (analytics.complete || []).length;
       const locked = (analytics.locked || []).length;
@@ -598,11 +634,11 @@
         <h2 style="margin-bottom: 30px; font-size: 2.5rem;">Choose Your Fate</h2>
         <button class="difficulty-btn" onclick="selectDifficulty('easy')">
           🟢 Easy Mode<br>
-          <span style="font-size: 1rem;">Unlimited Lives • No Time Limit • 2 Hints Per Riddle</span>
+          <span style="font-size: 1rem;">Unlimited Lives • No Time Limit • 2 Hints Total</span>
         </button>
         <button class="difficulty-btn" onclick="selectDifficulty('medium')">
           🟡 Medium Mode<br>
-          <span style="font-size: 1rem;">5 Lives • 15 Minutes • 1 Hint Per Riddle</span>
+          <span style="font-size: 1rem;">5 Lives • 15 Minutes • 1 Hint Total</span>
         </button>
         <button class="difficulty-btn" onclick="selectDifficulty('hard')">
           🔴 Hard Mode<br>
@@ -614,27 +650,38 @@
   }
 
   window.selectDifficulty = function(diff) {
-    difficulty = diff;
-    riddles = riddlesByDifficulty[diff];
+    difficulty = sanitizeInput(diff);
+    if (!['easy', 'medium', 'hard'].includes(difficulty)) {
+      alert('Invalid difficulty selected!');
+      return;
+    }
     
-    switch(diff) {
+    riddles = riddlesByDifficulty[difficulty];
+    
+    switch(difficulty) {
       case 'easy':
         maxLives = 999;
         timeLimit = 0;
+        totalHints = 2;
+        hintsRemaining = 2;
         break;
       case 'medium':
         maxLives = 5;
         timeLimit = 15 * 60;
+        totalHints = 1;
+        hintsRemaining = 1;
         break;
       case 'hard':
         maxLives = 3;
         timeLimit = 10 * 60;
+        totalHints = 0;
+        hintsRemaining = 0;
         break;
     }
     
     lives = maxLives;
     document.querySelector('.difficulty-screen').remove();
-    trackEvent('attempt', {difficulty: diff});
+    trackEvent('attempt', {difficulty: difficulty});
     saveProgress();
     init();
   };
@@ -649,46 +696,62 @@
         startTime,
         timeLimit,
         hintsUsed,
+        hintsRemaining,
         tabSwitchCount
       };
-      localStorage.setItem('dungeon_progress', JSON.stringify(progress));
-    } catch (e) {}
+      safeSetItem('dungeon_progress', JSON.stringify(progress));
+    } catch (e) {
+      console.error('Save error:', e);
+    }
   }
 
   function loadProgress() {
     try {
-      const saved = localStorage.getItem('dungeon_progress');
+      const saved = safeGetItem('dungeon_progress');
       if (!saved) return false;
       
       const progress = JSON.parse(saved);
       if (!progress.difficulty) return false;
       
-      difficulty = progress.difficulty;
+      difficulty = sanitizeInput(progress.difficulty);
+      if (!['easy', 'medium', 'hard'].includes(difficulty)) return false;
+      
       riddles = riddlesByDifficulty[difficulty];
       Object.assign(solved, progress.solved);
-      lives = progress.lives || maxLives;
-      hintsUsed = progress.hintsUsed || 0;
-      tabSwitchCount = progress.tabSwitchCount || 0;
+      lives = parseInt(progress.lives) || maxLives;
+      hintsUsed = parseInt(progress.hintsUsed) || 0;
+      hintsRemaining = parseInt(progress.hintsRemaining) || 0;
+      tabSwitchCount = parseInt(progress.tabSwitchCount) || 0;
       startTime = progress.startTime;
-      timeLimit = progress.timeLimit || 0;
+      timeLimit = parseInt(progress.timeLimit) || 0;
       
       switch(difficulty) {
-        case 'easy': maxLives = 999; break;
-        case 'medium': maxLives = 5; break;
-        case 'hard': maxLives = 3; break;
+        case 'easy': 
+          maxLives = 999;
+          totalHints = 2;
+          break;
+        case 'medium': 
+          maxLives = 5;
+          totalHints = 1;
+          break;
+        case 'hard': 
+          maxLives = 3;
+          totalHints = 0;
+          break;
       }
       
       return true;
     } catch (e) {
+      console.error('Load error:', e);
       return false;
     }
   }
 
   function checkInitialLock() {
     try {
-      const locked = localStorage.getItem('dungeon_locked');
+      const locked = safeGetItem('dungeon_locked');
       if (locked === 'true') {
-        const count = parseInt(localStorage.getItem('tab_switch_count') || '5');
+        const count = parseInt(safeGetItem('tab_switch_count') || '5');
         showPermanentLock(count);
         return true;
       }
@@ -784,7 +847,7 @@
     const fb = document.getElementById('feedback' + id);
     if (!inp) return;
     
-    let val = (inp.value || '').trim();
+    let val = sanitizeInput(inp.value || '').trim();
     val = stripZeroWidth(val);
     
     if (!val) {
@@ -794,7 +857,10 @@
     }
     
     const first = val[0].toUpperCase();
-    const expected = riddles.find(r => r.id === id).answer.toUpperCase();
+    const riddle = riddles.find(r => r.id === id);
+    if (!riddle) return;
+    
+    const expected = riddle.answer.toUpperCase();
     
     if (first === expected) {
       solved[id] = true;
@@ -841,7 +907,7 @@
     if (success) {
       const time = getElapsedTime();
       trackEvent('complete', {difficulty, time, hintsUsed});
-      localStorage.removeItem('dungeon_progress');
+      safeSetItem('dungeon_progress', '');
     }
   }
 
@@ -852,7 +918,8 @@
     }
     const codeInput = document.getElementById('codeInput');
     const res = document.getElementById('result');
-    const entered = stripZeroWidth((codeInput.value || '').trim().toUpperCase());
+    let entered = sanitizeInput(codeInput.value || '').trim().toUpperCase();
+    entered = stripZeroWidth(entered);
     
     if (!entered) {
       res.style.color = '#ff8c00';
@@ -907,8 +974,15 @@
   });
 
   document.getElementById('hintBtn').addEventListener('click', () => {
-    const rn = prompt('Which riddle do you want a hint for? (1-5)');
     const hb = document.getElementById('hintBox');
+    
+    if (hintsRemaining <= 0) {
+      hb.style.display = 'block';
+      hb.innerHTML = `<p class="no-select" style="font-family: Creepster, cursive, sans-serif; font-size: 1.2rem;">⛔ No hints remaining! (${hintsUsed}/${totalHints} used)</p>`;
+      return;
+    }
+    
+    const rn = prompt('Which riddle do you want a hint for? (1-5)');
     
     if (!rn) {
       hb.style.display = 'none'; 
@@ -916,26 +990,20 @@
       return;
     }
     
-    const n = parseInt(rn);
-    const riddle = riddles.find(r => r.id === n);
+    const n = parseInt(sanitizeInput(rn));
     
-    if (hints[n] && riddle) {
-      if (riddle.hints <= 0) {
-        hb.style.display = 'block';
-        hb.innerHTML = `<p class="no-select" style="font-family: Creepster, cursive, sans-serif; font-size: 1.2rem;">⛔ No hints available in ${difficulty} mode!</p>`;
-        return;
-      }
-      
-      hb.style.display = 'block';
-      hb.innerHTML = `<p class="no-select" style="font-family: Creepster, cursive, sans-serif; font-size: 1.2rem;">💡 Hint for Riddle ${n}: ${hints[n]}</p>`;
-      riddle.hints--;
-      hintsUsed++;
-      trackEvent('hint', {riddle: n, difficulty});
-      saveProgress();
-    } else {
+    if (n < 1 || n > 5 || !hints[n]) {
       hb.style.display = 'block';
       hb.innerHTML = `<p class="no-select" style="font-family: Creepster, cursive, sans-serif; font-size: 1.2rem;">That riddle doesn't exist — try a number from 1 to 5.</p>`;
+      return;
     }
+    
+    hb.style.display = 'block';
+    hb.innerHTML = `<p class="no-select" style="font-family: Creepster, cursive, sans-serif; font-size: 1.2rem;">💡 Hint for Riddle ${n}: ${hints[n]}<br><br>Hints remaining: ${hintsRemaining - 1}/${totalHints}</p>`;
+    hintsRemaining--;
+    hintsUsed++;
+    trackEvent('hint', {riddle: n, difficulty});
+    saveProgress();
   });
 
   // Admin functions
@@ -944,7 +1012,7 @@
   });
 
   window.adminLogin = function() {
-    const pass = document.getElementById('adminPassword').value;
+    const pass = sanitizeInput(document.getElementById('adminPassword').value);
     if (pass === ADMIN_PASSWORD) {
       isAdminAuthenticated = true;
       document.getElementById('adminLogin').style.display = 'none';
@@ -972,30 +1040,46 @@
   }
 
   window.resetProgress = function() {
+    if (!isAdminAuthenticated) {
+      alert('Admin authentication required!');
+      return;
+    }
     if (confirm('Reset current progress? This will restart the game.')) {
-      localStorage.removeItem('dungeon_progress');
+      safeSetItem('dungeon_progress', '');
       location.reload();
     }
   };
 
   window.unlockUser = function() {
+    if (!isAdminAuthenticated) {
+      alert('Admin authentication required!');
+      return;
+    }
     if (confirm('Unlock this user and allow them to play again?')) {
-      localStorage.removeItem('dungeon_locked');
-      localStorage.removeItem('tab_switch_count');
+      safeSetItem('dungeon_locked', '');
+      safeSetItem('tab_switch_count', '');
       location.reload();
     }
   };
 
   window.clearAllData = function() {
+    if (!isAdminAuthenticated) {
+      alert('Admin authentication required!');
+      return;
+    }
     if (confirm('Clear all analytics data? This cannot be undone!')) {
-      localStorage.removeItem('dungeon_analytics');
+      safeSetItem('dungeon_analytics', '');
       updateAdminStats();
       alert('Analytics cleared!');
     }
   };
 
   window.exportData = function() {
-    const analytics = localStorage.getItem('dungeon_analytics') || '{}';
+    if (!isAdminAuthenticated) {
+      alert('Admin authentication required!');
+      return;
+    }
+    const analytics = safeGetItem('dungeon_analytics') || '{}';
     const blob = new Blob([analytics], {type: 'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1106,8 +1190,8 @@
     stopTimer();
     
     try {
-      localStorage.setItem('dungeon_locked', 'true');
-      localStorage.setItem('tab_switch_count', tabSwitchCount.toString());
+      safeSetItem('dungeon_locked', 'true');
+      safeSetItem('tab_switch_count', tabSwitchCount.toString());
       trackEvent('locked', {tabSwitches: tabSwitchCount, difficulty});
     } catch (e) {
       console.error('Failed to save lock:', e);
@@ -1120,6 +1204,7 @@
     isLocked = true;
     
     const overlay = document.createElement('div');
+    overlay.id = 'lockOverlay';
     overlay.style.cssText = `
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(139, 0, 0, 0.98); display: flex;
@@ -1150,8 +1235,14 @@
     overlay.appendChild(lockBox);
     document.body.appendChild(overlay);
     
+    // Keep admin toggle and panel accessible
+    const adminToggle = document.getElementById('adminToggle');
+    const adminPanel = document.getElementById('adminPanel');
+    if (adminToggle) adminToggle.style.zIndex = '10002';
+    if (adminPanel) adminPanel.style.zIndex = '10003';
+    
     document.querySelectorAll('input, button').forEach(el => {
-      if (!el.closest('.admin-panel')) {
+      if (!el.closest('.admin-panel') && el.id !== 'adminToggle') {
         el.disabled = true;
       }
     });
