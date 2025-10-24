@@ -514,6 +514,13 @@
         showPermanentLock(count);
         return true;
       }
+      
+      const escaped = localStorage.getItem('dungeon_escaped');
+      if (escaped === 'true') {
+        const code = localStorage.getItem('escape_code') || 'GHOUL';
+        showVictoryScreen(code);
+        return true;
+      }
     } catch (e) {
       console.error('Storage error:', e);
     }
@@ -622,6 +629,14 @@
   }
 
   function showVictoryScreen(code) {
+    // Save victory state to localStorage
+    try {
+      localStorage.setItem('dungeon_escaped', 'true');
+      localStorage.setItem('escape_code', code);
+    } catch (e) {
+      console.error('Failed to save victory:', e);
+    }
+    
     const overlay = document.createElement('div');
     overlay.className = 'victory-overlay';
     
@@ -656,11 +671,19 @@
         🎃 Well done, brave soul! 🎃
       </p>
       <div class="victory-emoji" style="animation-delay: 0.5s;">👻</div>
+      <p class="victory-message" style="font-size: 0.9rem; margin-top: 30px; color: #88cc88;">
+        (This victory persists even after refresh!)
+      </p>
     `;
     
     overlay.appendChild(sparkles);
     overlay.appendChild(content);
     document.body.appendChild(overlay);
+    
+    // Disable all inputs
+    document.querySelectorAll('input, button').forEach(el => {
+      el.disabled = true;
+    });
   }
 
   function showWarning(title, message, footer) {
@@ -759,7 +782,8 @@
       <div class="lock-warning">
         ⚠️ PERMANENTLY SEALED ⚠️<br><br>
         This dungeon is now locked for eternity.<br>
-        Refreshing will not save you.
+        Refreshing will not save you.<br>
+        Only clearing your browser data can break this curse.
       </div>
       <div class="lock-count">
         Tab Switches: ${count}
