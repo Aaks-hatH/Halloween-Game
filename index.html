@@ -23,7 +23,10 @@
     border: 1px solid rgba(255,140,0,.2);
     padding: 18px;
     border-radius: 14px;
-    transition: border-color 0.3s;
+    transition: all 0.5s ease;
+  }
+  .riddle-card.solved {
+    animation: solvedPulse 0.6s ease;
   }
   .riddle-text {
     background: rgba(10,10,10,.9);
@@ -49,6 +52,11 @@
     font-family: sans-serif; 
     text-align:center;
     font-size: 1rem;
+    transition: all 0.3s;
+  }
+  input[type=text]:focus {
+    border-color: rgba(255,140,0,.8);
+    box-shadow: 0 0 15px rgba(255,140,0,.3);
   }
   button { 
     padding:10px 18px; 
@@ -77,7 +85,7 @@
     background: linear-gradient(90deg,#ff8c00,#ff6600); 
     color:#0a0a0a; 
     font-weight:bold;
-    transition: width 0.3s;
+    transition: width 0.6s ease;
     font-family: sans-serif;
   }
   .progress-bar { 
@@ -97,12 +105,18 @@
     border-radius:8px; 
     border:1px solid rgba(255,140,0,.2); 
   }
-  #result { margin-top:10px; min-height:26px; font-family: sans-serif; }
+  #result { 
+    margin-top:10px; 
+    min-height:26px; 
+    font-family: sans-serif;
+    transition: all 0.3s;
+  }
   .feedback {
     min-height: 22px;
     margin-top: 10px;
     font-family: sans-serif;
     font-size: 1rem;
+    transition: all 0.3s;
   }
   .credits {
     margin-top: 60px;
@@ -146,10 +160,57 @@
     -ms-user-select:none; 
     user-select:none;
   }
+  
   @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
   }
+  
+  @keyframes solvedPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(0,255,0,0.5); }
+    100% { transform: scale(1); }
+  }
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+  }
+  
+  @keyframes dramaticLock {
+    0% { 
+      transform: scale(0.5) rotate(-180deg); 
+      opacity: 0;
+    }
+    50% { 
+      transform: scale(1.1) rotate(10deg); 
+    }
+    100% { 
+      transform: scale(1) rotate(0deg); 
+      opacity: 1;
+    }
+  }
+  
+  @keyframes redFlash {
+    0%, 100% { background: rgba(139, 0, 0, 0.98); }
+    50% { background: rgba(200, 0, 0, 0.98); }
+  }
+  
+  @keyframes glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-5px, 5px); }
+    40% { transform: translate(-5px, -5px); }
+    60% { transform: translate(5px, 5px); }
+    80% { transform: translate(5px, -5px); }
+    100% { transform: translate(0); }
+  }
+  
+  @keyframes successBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+  
   @media (max-width:640px) {
     input[type=text] { width: 150px; }
   }
@@ -204,7 +265,6 @@
 (function() {
   'use strict';
   
-  // Riddles data
   const riddles = [
     {
       id: 1,
@@ -251,16 +311,13 @@
   let firstWarningShown = false;
   let isLocked = false;
 
-  // Check lock status on load
   function checkInitialLock() {
     try {
       const locked = localStorage.getItem('dungeon_locked');
       const count = localStorage.getItem('tab_switch_count');
-      console.log('Checking lock status:', locked, 'count:', count);
       
       if (locked === 'true') {
         const switchCount = parseInt(count || '5');
-        console.log('Page is locked, showing lock screen');
         showPermanentLock(switchCount);
         return true;
       }
@@ -332,9 +389,17 @@
   function updateProgressDisplay() {
     const solvedCount = Object.values(solved).filter(Boolean).length;
     const pct = (solvedCount/5) * 100;
-    document.getElementById('progressFill').style.width = pct + '%';
-    document.getElementById('progressFill').textContent = `${solvedCount}/5`;
+    const fill = document.getElementById('progressFill');
+    fill.style.width = pct + '%';
+    fill.textContent = `${solvedCount}/5`;
     document.getElementById('progressText').textContent = `${solvedCount} / 5 solved`;
+    
+    // Celebration when all solved
+    if (solvedCount === 5) {
+      setTimeout(() => {
+        fill.style.animation = 'successBounce 0.5s ease 3';
+      }, 300);
+    }
   }
 
   function checkRiddle(id) {
@@ -344,6 +409,7 @@
     }
     const inp = document.getElementById('answer' + id);
     const fb = document.getElementById('feedback' + id);
+    const card = document.getElementById('card-' + id);
     if (!inp) return;
     
     let val = (inp.value || '').trim();
@@ -352,6 +418,8 @@
     if (!val) {
       fb.style.color = '#ff4444';
       fb.textContent = 'Please type an answer.';
+      fb.style.animation = 'shake 0.3s';
+      setTimeout(() => fb.style.animation = '', 300);
       return;
     }
     
@@ -361,15 +429,66 @@
     if (first === expected) {
       solved[id] = true;
       fb.style.color = '#00cc66';
-      fb.textContent = '✓ Correct, nice work.';
+      fb.textContent = '✓ Correct, nice work!';
       inp.disabled = true;
-      const card = document.getElementById('card-' + id);
-      if (card) card.style.borderColor = 'rgba(0,255,0,0.4)';
+      if (card) {
+        card.style.borderColor = 'rgba(0,255,0,0.6)';
+        card.classList.add('solved');
+        setTimeout(() => card.classList.remove('solved'), 600);
+      }
       updateProgressDisplay();
+      
+      // Confetti effect for correct answer
+      createConfetti(card);
     } else {
       fb.style.color = '#ff4444';
       fb.textContent = '✗ Incorrect, try again.';
-      setTimeout(() => { fb.textContent = ''; }, 3000);
+      fb.style.animation = 'shake 0.3s';
+      setTimeout(() => {
+        fb.style.animation = '';
+        fb.textContent = '';
+      }, 3000);
+    }
+  }
+
+  function createConfetti(element) {
+    const colors = ['#ff8c00', '#ff6600', '#00cc66', '#ffaa00'];
+    for (let i = 0; i < 15; i++) {
+      const confetti = document.createElement('div');
+      confetti.style.cssText = `
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+      `;
+      
+      const rect = element.getBoundingClientRect();
+      confetti.style.left = rect.left + rect.width/2 + 'px';
+      confetti.style.top = rect.top + rect.height/2 + 'px';
+      
+      document.body.appendChild(confetti);
+      
+      const angle = (Math.random() * 360) * Math.PI / 180;
+      const velocity = 100 + Math.random() * 100;
+      const vx = Math.cos(angle) * velocity;
+      const vy = Math.sin(angle) * velocity;
+      
+      let x = 0, y = 0, opacity = 1;
+      const animation = setInterval(() => {
+        x += vx / 60;
+        y += vy / 60 + 2;
+        opacity -= 0.02;
+        confetti.style.transform = `translate(${x}px, ${y}px)`;
+        confetti.style.opacity = opacity;
+        
+        if (opacity <= 0) {
+          clearInterval(animation);
+          confetti.remove();
+        }
+      }, 16);
     }
   }
 
@@ -389,21 +508,34 @@
     if (!entered) {
       res.style.color = '#ff8c00';
       res.textContent = 'Enter the 5-letter code to escape!';
+      res.style.animation = 'shake 0.3s';
+      setTimeout(() => res.style.animation = '', 300);
       return;
     }
     if (entered.length !== 5) {
       res.style.color = '#ff4444';
       res.textContent = 'Code must be 5 letters.';
+      res.style.animation = 'shake 0.3s';
+      setTimeout(() => res.style.animation = '', 300);
       return;
     }
     
     const target = getFinalCode();
     if (entered === target) {
       res.style.color = '#00cc66';
+      res.style.fontSize = '1.3rem';
+      res.style.animation = 'successBounce 0.5s ease 3';
       res.textContent = '🎉 You have escaped the dungeon! The spirits bow to your wisdom. 🎉';
+      
+      // Victory confetti
+      for(let i = 0; i < 50; i++) {
+        setTimeout(() => createConfetti(res), i * 30);
+      }
     } else {
       res.style.color = '#ff4444';
       res.textContent = '❌ Wrong code... The dungeon remains locked.';
+      res.style.animation = 'shake 0.3s';
+      setTimeout(() => res.style.animation = '', 300);
     }
   });
 
@@ -425,6 +557,7 @@
     const n = parseInt(rn);
     if (hints[n]) {
       hb.style.display = 'block';
+      hb.style.animation = 'fadeIn 0.3s';
       hb.innerHTML = `<p class="no-select" style="font-family: sans-serif;">💡 Hint for Riddle ${n}: ${hints[n]}</p>`;
     } else {
       hb.style.display = 'block';
@@ -474,7 +607,7 @@
       if (tabSwitchCount === 1 && !firstWarningShown) {
         showWarning(
           '⚠️ WARNING ⚠️',
-          `Our Advanced Anti-Cheat System has detected tab switching!<br><br>Using external help (like ChatGPT) defeats the purpose of this puzzle.<br><br>Try to solve it yourself! `,
+          `Our Advanced Anti-Cheat System has detected tab switching!<br><br>Using external help (like ChatGPT) defeats the purpose of this puzzle.<br><br>Try to solve it yourself! 🧠`,
           `Switches detected: ${tabSwitchCount}<br><strong style="color: #ff4444;">After 5 switches, the page will be PERMANENTLY LOCKED!</strong>`
         );
         firstWarningShown = true;
@@ -482,13 +615,14 @@
         showWarning(
           '🚨 FINAL WARNING 🚨',
           `You have switched tabs ${tabSwitchCount} times!<br><br>One more switch and the page will be PERMANENTLY LOCKED!<br><br><strong style="color: #ff0000;">Even refreshing won't help!</strong>`,
-          `Violations remaining: ${5 - tabSwitchCount}`
+          `Violations remaining: ${5 - tabSwitchCount}`,
+          true
         );
       }
     }
   });
 
-  function showWarning(title, message, footer) {
+  function showWarning(title, message, footer, severe = false) {
     const overlay = document.createElement('div');
     overlay.style.cssText = `
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -500,13 +634,15 @@
     const warningBox = document.createElement('div');
     warningBox.style.cssText = `
       background: linear-gradient(135deg, rgba(139, 0, 0, 0.95), rgba(70, 0, 0, 0.95));
-      border: 3px solid #ff4444; border-radius: 20px; padding: 40px;
+      border: ${severe ? '4px' : '3px'} solid ${severe ? '#ff0000' : '#ff4444'}; 
+      border-radius: 20px; padding: 40px;
       max-width: 500px; text-align: center;
-      box-shadow: 0 0 50px rgba(255, 68, 68, 0.5);
+      box-shadow: 0 0 ${severe ? '60px' : '50px'} rgba(255, ${severe ? '0' : '68'}, ${severe ? '0' : '68'}, 0.6);
+      animation: ${severe ? 'shake 0.5s' : 'fadeIn 0.3s'};
     `;
 
     warningBox.innerHTML = `
-      <h2 style="color: #ff4444; font-size: 2rem; margin-bottom: 20px; font-family: Creepster, cursive;">${title}</h2>
+      <h2 style="color: ${severe ? '#ff0000' : '#ff4444'}; font-size: ${severe ? '2.3rem' : '2rem'}; margin-bottom: 20px; font-family: Creepster, cursive;">${title}</h2>
       <p style="color: #ffaa66; font-size: 1.1rem; margin-bottom: 20px; line-height: 1.6; font-family: sans-serif;">
         ${message}
       </p>
@@ -515,8 +651,8 @@
       </p>
       <button id="acknowledgeBtn" style="
         padding: 15px 30px; font-size: 1.1rem; border-radius: 12px;
-        border: none; background: linear-gradient(135deg, #ff8c00, #ff6600);
-        color: #0a0a0a; font-weight: bold; cursor: pointer;
+        border: none; background: linear-gradient(135deg, ${severe ? '#ff0000' : '#ff8c00'}, ${severe ? '#cc0000' : '#ff6600'});
+        color: ${severe ? '#ffffff' : '#0a0a0a'}; font-weight: bold; cursor: pointer;
         font-family: Creepster, cursive;
       ">I Understand</button>
     `;
@@ -531,15 +667,9 @@
   async function lockPage() {
     isLocked = true;
     
-    // Save to localStorage
     try {
       localStorage.setItem('dungeon_locked', 'true');
       localStorage.setItem('tab_switch_count', tabSwitchCount.toString());
-      console.log('Lock saved to localStorage:', tabSwitchCount);
-      
-      // Verify it was saved
-      const verify = localStorage.getItem('dungeon_locked');
-      console.log('Verification - locked:', verify);
     } catch (e) {
       console.error('Failed to save lock:', e);
     }
@@ -555,50 +685,27 @@
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(139, 0, 0, 0.98); display: flex;
       align-items: center; justify-content: center; z-index: 10000;
-      animation: fadeIn 0.5s ease;
+      animation: redFlash 2s infinite;
     `;
 
     const lockBox = document.createElement('div');
     lockBox.style.cssText = `
-      background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(70, 0, 0, 0.95));
-      border: 4px solid #ff0000; border-radius: 20px; padding: 50px;
-      max-width: 600px; text-align: center;
-      box-shadow: 0 0 80px rgba(255, 0, 0, 0.8);
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.98), rgba(70, 0, 0, 0.98));
+      border: 6px solid #ff0000; border-radius: 20px; padding: 60px;
+      max-width: 650px; text-align: center;
+      box-shadow: 0 0 100px rgba(255, 0, 0, 1), inset 0 0 50px rgba(255, 0, 0, 0.3);
+      animation: dramaticLock 1s ease;
     `;
 
     lockBox.innerHTML = `
-      <h1 style="color: #ff0000; font-size: 3rem; margin-bottom: 30px; font-family: Creepster, cursive;">PERMANENTLY LOCKED</h1>
-      <p style="color: #ffaa66; font-size: 1.3rem; margin-bottom: 20px; line-height: 1.8; font-family: sans-serif;">
-        You have been caught switching tabs too many times!<br><br>
-        The dungeon is now <strong style="color: #ff0000;">PERMANENTLY LOCKED</strong>.<br><br>
-        Refreshing the page will not help.
-      </p>
-      <p style="color: #ff8c00; font-size: 1rem; font-family: sans-serif; font-style: italic; margin-top: 30px;">
-        Tab switches detected: ${count}
-      </p>
-    `;
-
-    overlay.appendChild(lockBox);
-    document.body.appendChild(overlay);
-    
-    document.querySelectorAll('input, button').forEach(el => {
-      el.disabled = true;
-    });
-  }
-
-  // Initialize
-  function init() {
-    const wasLocked = checkInitialLock();
-    
-    if (!wasLocked) {
-      renderRiddles();
-      updateProgressDisplay();
-    }
-  }
-
-  init();
-
-})();
-</script>
-</body>
-</html>
+      <div style="animation: glitch 0.3s infinite;">
+        <h1 style="color: #ff0000; font-size: 3.5rem; margin-bottom: 30px; font-family: Creepster, cursive; text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;">
+          🔒 PERMANENTLY LOCKED 🔒
+        </h1>
+      </div>
+      <p style="color: #ffaa66; font-size: 1.4rem; margin-bottom: 25px; line-height: 1.8; font-family: sans-serif;">
+        <strong style="color: #ff0000; font-size: 1.6rem;">CHEATING DETECTED!</strong><br><br>
+        You have been caught switching tabs <strong style="color: #ff0000; font-size: 1.5rem;">${count}</strong> times!<br><br>
+        The dungeon is now <strong style="color: #ff0000; font-size: 1.6rem; text-shadow: 0 0 10px #ff0000;">PERMANENTLY LOCKED</strong>.<br><br>
+        <span style="color: #ff4444; font-size: 1.2rem;">⚠️ Refreshing the page will NOT help. ⚠️</span><br>
+        <span style="color: #ff6666; font
