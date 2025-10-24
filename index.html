@@ -135,6 +135,37 @@
     transition: opacity 0.3s;
   }
   .admin-toggle:hover { opacity: 1; }
+  
+  /* Music controls */
+  .music-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(20,20,20,0.9);
+    border: 2px solid #ff8c00;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10002;
+    font-size: 1.5rem;
+    transition: all 0.3s;
+  }
+  .music-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(255,140,0,0.5);
+  }
+  .music-toggle.playing {
+    animation: musicPulse 2s infinite;
+  }
+  @keyframes musicPulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(255,140,0,0.3); }
+    50% { box-shadow: 0 0 25px rgba(255,140,0,0.7); }
+  }
+  
   .admin-panel {
     position: fixed;
     top: 50%;
@@ -467,7 +498,7 @@
 (function() {
   'use strict';
   
-  // Encrypted credentials 
+  // Encrypted credentials (Base64 encoded)
   const ENCRYPTED_ADMIN_USER = atob('QWFrcy1oYXRI');
   const ENCRYPTED_ADMIN_PASS = atob('QWFrc2hhdGFkbWlu');
   let isAdminAuthenticated = false;
