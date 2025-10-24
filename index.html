@@ -254,12 +254,158 @@
     box-shadow: 0 0 20px #00ff00;
     animation: sparkle 2s ease-in-out infinite;
   }
+
+  /* Lock Screen Styles */
+  .lock-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(139, 0, 0, 0.98), rgba(50, 0, 0, 0.98));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.5s ease, bloodDrip 3s ease-in-out infinite;
+  }
+
+  @keyframes bloodDrip {
+    0%, 100% { background-position: 0% 0%; }
+    50% { background-position: 0% 100%; }
+  }
+
+  .lock-content {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(70, 0, 0, 0.95));
+    border: 5px solid #ff0000;
+    border-radius: 20px;
+    padding: 60px 40px;
+    max-width: 800px;
+    text-align: center;
+    box-shadow: 0 0 150px rgba(255, 0, 0, 0.8), inset 0 0 50px rgba(255, 0, 0, 0.3);
+    animation: lockShake 0.5s ease-in-out, lockPulse 2s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+  }
+
+  @keyframes lockShake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+  }
+
+  @keyframes lockPulse {
+    0%, 100% { 
+      transform: scale(1); 
+      box-shadow: 0 0 150px rgba(255, 0, 0, 0.8), inset 0 0 50px rgba(255, 0, 0, 0.3);
+      border-color: #ff0000;
+    }
+    50% { 
+      transform: scale(1.02); 
+      box-shadow: 0 0 200px rgba(255, 0, 0, 1), inset 0 0 80px rgba(255, 0, 0, 0.5);
+      border-color: #ff3333;
+    }
+  }
+
+  @keyframes skullFloat {
+    0%, 100% { transform: translateY(0px) rotate(-5deg); }
+    50% { transform: translateY(-30px) rotate(5deg); }
+  }
+
+  @keyframes chainsSwing {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(5deg); }
+    75% { transform: rotate(-5deg); }
+  }
+
+  @keyframes redFlash {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+
+  .lock-title {
+    color: #ff0000;
+    font-size: 4.5rem;
+    margin-bottom: 30px;
+    font-family: 'Creepster', cursive;
+    text-shadow: 0 0 40px #ff0000, 0 0 80px #ff0000, 0 5px 20px rgba(0,0,0,0.8);
+    animation: skullFloat 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 30px #ff0000);
+  }
+
+  .lock-message {
+    color: #ffaaaa;
+    font-size: 1.6rem;
+    margin-bottom: 30px;
+    line-height: 2;
+    font-family: sans-serif;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+  }
+
+  .lock-warning {
+    background: rgba(255, 0, 0, 0.2);
+    border: 3px solid #ff0000;
+    border-radius: 15px;
+    padding: 30px;
+    margin: 30px 0;
+    font-size: 1.4rem;
+    color: #ff6666;
+    font-family: sans-serif;
+    text-shadow: 0 0 10px #ff0000;
+    animation: redFlash 2s ease-in-out infinite;
+  }
+
+  .lock-count {
+    font-size: 3rem;
+    color: #ff0000;
+    font-family: 'Creepster', cursive;
+    letter-spacing: 5px;
+    margin: 20px 0;
+    text-shadow: 0 0 30px #ff0000;
+  }
+
+  .chains {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .chain {
+    position: absolute;
+    font-size: 3rem;
+    color: #666;
+    text-shadow: 0 0 10px #ff0000;
+    animation: chainsSwing 4s ease-in-out infinite;
+    opacity: 0.6;
+  }
+
+  .blood-drip {
+    position: absolute;
+    width: 3px;
+    height: 40px;
+    background: linear-gradient(to bottom, transparent, #8B0000);
+    animation: drip 3s ease-in-out infinite;
+  }
+
+  @keyframes drip {
+    0% { top: -50px; opacity: 0; }
+    50% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
   
   @media (max-width:640px) {
     input[type=text] { width: 150px; }
     .victory-title { font-size: 2.5rem; }
     .victory-message { font-size: 1.2rem; }
     .victory-code { font-size: 1.8rem; letter-spacing: 5px; }
+    .lock-title { font-size: 2.5rem; }
+    .lock-message { font-size: 1.2rem; }
+    .lock-warning { font-size: 1.1rem; padding: 20px; }
+    .lock-count { font-size: 2rem; }
   }
 </style>
 </head>
@@ -355,6 +501,24 @@
   };
   
   const solved = {1:false, 2:false, 3:false, 4:false, 5:false};
+  let tabSwitchCount = 0;
+  let firstWarningShown = false;
+  let isLocked = false;
+
+  // Check lock status on load
+  function checkInitialLock() {
+    try {
+      const locked = localStorage.getItem('dungeon_locked');
+      if (locked === 'true') {
+        const count = parseInt(localStorage.getItem('tab_switch_count') || '5');
+        showPermanentLock(count);
+        return true;
+      }
+    } catch (e) {
+      console.error('Storage error:', e);
+    }
+    return false;
+  }
 
   function stripZeroWidth(str) {
     return str.replace(/[\u200B\u200C\u200D\uFEFF\u2060]/g, '');
@@ -417,6 +581,11 @@
   }
 
   function checkRiddle(id) {
+    if (isLocked) {
+      alert('Page is locked due to excessive tab switching.');
+      return;
+    }
+    
     const inp = document.getElementById('answer' + id);
     const fb = document.getElementById('feedback' + id);
     if (!inp) return;
@@ -494,7 +663,130 @@
     document.body.appendChild(overlay);
   }
 
+  function showWarning(title, message, footer) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.95); display: flex;
+      align-items: center; justify-content: center; z-index: 10000;
+      animation: fadeIn 0.3s ease;
+    `;
+
+    const warningBox = document.createElement('div');
+    warningBox.style.cssText = `
+      background: linear-gradient(135deg, rgba(139, 0, 0, 0.95), rgba(70, 0, 0, 0.95));
+      border: 3px solid #ff4444; border-radius: 20px; padding: 40px;
+      max-width: 500px; text-align: center;
+      box-shadow: 0 0 50px rgba(255, 68, 68, 0.5);
+    `;
+
+    warningBox.innerHTML = `
+      <h2 style="color: #ff4444; font-size: 2rem; margin-bottom: 20px; font-family: Creepster, cursive;">${title}</h2>
+      <p style="color: #ffaa66; font-size: 1.1rem; margin-bottom: 20px; line-height: 1.6; font-family: sans-serif;">
+        ${message}
+      </p>
+      <p style="color: #ff8c00; font-size: 0.9rem; margin-bottom: 25px; font-family: sans-serif;">
+        ${footer}
+      </p>
+      <button id="acknowledgeBtn" style="
+        padding: 15px 30px; font-size: 1.1rem; border-radius: 12px;
+        border: none; background: linear-gradient(135deg, #ff8c00, #ff6600);
+        color: #0a0a0a; font-weight: bold; cursor: pointer;
+        font-family: Creepster, cursive;
+      ">I Understand</button>
+    `;
+
+    overlay.appendChild(warningBox);
+    document.body.appendChild(overlay);
+    
+    const btn = warningBox.querySelector('#acknowledgeBtn');
+    btn.onclick = () => overlay.remove();
+  }
+
+  function lockPage() {
+    isLocked = true;
+    
+    // Save to localStorage
+    try {
+      localStorage.setItem('dungeon_locked', 'true');
+      localStorage.setItem('tab_switch_count', tabSwitchCount.toString());
+    } catch (e) {
+      console.error('Failed to save lock:', e);
+    }
+    
+    showPermanentLock(tabSwitchCount);
+  }
+
+  function showPermanentLock(count) {
+    isLocked = true;
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'lock-overlay';
+    
+    const chains = document.createElement('div');
+    chains.className = 'chains';
+    
+    // Create chain effects
+    for (let i = 0; i < 8; i++) {
+      const chain = document.createElement('div');
+      chain.className = 'chain';
+      chain.textContent = '⛓️';
+      chain.style.left = (i * 12.5) + '%';
+      chain.style.top = '-50px';
+      chain.style.animationDelay = (i * 0.2) + 's';
+      chains.appendChild(chain);
+    }
+
+    // Create blood drip effects
+    for (let i = 0; i < 15; i++) {
+      const drip = document.createElement('div');
+      drip.className = 'blood-drip';
+      drip.style.left = Math.random() * 100 + '%';
+      drip.style.animationDelay = Math.random() * 3 + 's';
+      chains.appendChild(drip);
+    }
+    
+    const content = document.createElement('div');
+    content.className = 'lock-content';
+    
+    content.innerHTML = `
+      <h1 class="lock-title">☠️ FOREVER LOCKED ☠️</h1>
+      <p class="lock-message">
+        YOU HAVE BEEN CAUGHT!<br>
+        The dungeon spirits detected your deception!<br><br>
+        <strong style="color: #ff0000;">TAB SWITCHING IS FORBIDDEN!</strong>
+      </p>
+      <div class="lock-warning">
+        ⚠️ PERMANENTLY SEALED ⚠️<br><br>
+        This dungeon is now locked for eternity.<br>
+        Refreshing will not save you.<br>
+        Only clearing your browser data can break this curse.
+      </div>
+      <div class="lock-count">
+        Tab Switches: ${count}
+      </div>
+      <p class="lock-message" style="font-size: 1.2rem; margin-top: 30px; color: #ff6666;">
+        🔥 The flames of punishment burn eternal 🔥<br><br>
+        You sought outside help and the dungeon has claimed you!
+      </p>
+    `;
+    
+    overlay.appendChild(chains);
+    overlay.appendChild(content);
+    document.body.appendChild(overlay);
+    
+    // Disable all inputs
+    document.querySelectorAll('input, button').forEach(el => {
+      el.disabled = true;
+    });
+  }
+
   document.getElementById('unlockBtn').addEventListener('click', () => {
+    if (isLocked) {
+      alert('Page is locked due to excessive tab switching.');
+      return;
+    }
+    
     const codeInput = document.getElementById('codeInput');
     const res = document.getElementById('result');
     const entered = stripZeroWidth((codeInput.value || '').trim().toUpperCase());
@@ -543,9 +835,45 @@
     }
   });
 
+  // Tab switch detection
+  document.addEventListener('visibilitychange', () => {
+    if (isLocked) return;
+    
+    if (document.hidden) {
+      tabSwitchCount++;
+      
+      if (tabSwitchCount >= 5) {
+        lockPage();
+      }
+    } else {
+      if (tabSwitchCount === 1 && !firstWarningShown) {
+        showWarning(
+          '⚠️ WARNING ⚠️',
+          `Tab switching detected!<br><br>Using external help (like ChatGPT) defeats the purpose of this puzzle.<br><br>Try to solve it yourself! 🧠`,
+          `Switches detected: ${tabSwitchCount}<br><strong style="color: #ff4444;">After 5 switches, the page will be PERMANENTLY LOCKED!</strong>`
+        );
+        firstWarningShown = true;
+      } else if (tabSwitchCount >= 3 && tabSwitchCount < 5) {
+        showWarning(
+          '🚨 FINAL WARNING 🚨',
+          `You have switched tabs ${tabSwitchCount} times!<br><br>One more switch and the page will be PERMANENTLY LOCKED!<br><br><strong style="color: #ff0000;">Even refreshing won't help!</strong>`,
+          `Switches remaining: ${5 - tabSwitchCount}`
+        );
+      }
+    }
+  });
+
   // Initialize
-  renderRiddles();
-  updateProgressDisplay();
+  function init() {
+    const wasLocked = checkInitialLock();
+    
+    if (!wasLocked) {
+      renderRiddles();
+      updateProgressDisplay();
+    }
+  }
+
+  init();
 
 })();
 </script>
