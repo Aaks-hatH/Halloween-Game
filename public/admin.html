@@ -131,7 +131,7 @@
   .badge-medium { background: #ffaa00; color: #000; }
   .badge-hard { background: #ff0000; color: #fff; }
   .badge-attempt { background: #3498db; color: #fff; }
-  .badge-completion { background: #2ecc71; color: #fff; }
+  .badge-complete { background: #2ecc71; color: #fff; }
   .badge-locked { background: #e74c3c; color: #fff; }
   .badge-hint { background: #9b59b6; color: #fff; }
 
@@ -146,12 +146,12 @@
     min-width: 150px;
   }
   .btn-danger {
-    background: linear-gradient(135deg, #ff0000, #cc0000);
-    color: #fff;
+    background: linear-gradient(135deg, #ff0000, #cc0000) !important;
+    color: #fff !important;
   }
   .btn-secondary {
-    background: linear-gradient(135deg, #666, #444);
-    color: #fff;
+    background: linear-gradient(135deg, #666, #444) !important;
+    color: #fff !important;
   }
 
   .error {
@@ -165,6 +165,17 @@
     color: #888;
     padding: 40px;
     font-style: italic;
+  }
+
+  .player-controls {
+    display: flex;
+    gap: 5px;
+  }
+  .player-controls button {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    min-width: auto;
+    width: auto;
   }
 
   @media (max-width: 768px) {
@@ -184,7 +195,7 @@
 
 <!-- Login Screen -->
 <div id="loginScreen" class="login-box">
-  <h2>🔐 Admin Login</h2>
+  <h2>🔒 Admin Login</h2>
   <p style="color: #aaa; margin-bottom: 20px; font-size: 0.9rem;">Enter admin password to access dashboard</p>
   <input type="password" id="adminPassword" placeholder="Enter admin password" autofocus>
   <button onclick="login()">Login</button>
@@ -199,6 +210,7 @@
 
     <div class="controls">
       <button onclick="refreshData()">🔄 Refresh Data</button>
+      <button onclick="refreshPlayers()">👥 Refresh Players</button>
       <button onclick="exportData()" class="btn-secondary">📥 Export Data</button>
       <button onclick="clearData()" class="btn-danger">🗑️ Clear All Data</button>
       <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
@@ -207,11 +219,11 @@
     <!-- Stats Overview -->
     <div class="stats-grid" id="statsGrid">
       <div class="stat-card">
-        <div class="stat-label">Total Sessions</div>
-        <div class="stat-value" id="statSessions">0</div>
+        <div class="stat-label">Active Players</div>
+        <div class="stat-value" id="statActivePlayers">0</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Attempts</div>
+        <div class="stat-label">Total Attempts</div>
         <div class="stat-value" id="statAttempts">0</div>
       </div>
       <div class="stat-card">
@@ -226,6 +238,25 @@
         <div class="stat-label">Hints Used</div>
         <div class="stat-value" id="statHints">0</div>
       </div>
+    </div>
+
+    <!-- Active Players -->
+    <div class="section">
+      <h2>👥 Active Players</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Session ID</th>
+            <th>Difficulty</th>
+            <th>Status</th>
+            <th>Last Activity</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="playersTable">
+          <tr><td colspan="5" class="empty-state">No active players</td></tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Best Times -->
@@ -272,7 +303,7 @@
           <tr>
             <th>Session ID</th>
             <th>Difficulty</th>
-            <th>Time (seconds)</th>
+            <th>Time</th>
             <th>Hints Used</th>
             <th>Date</th>
           </tr>
@@ -284,52 +315,16 @@
     </div>
   </div>
 </div>
- 
- const SERVER_URL = "https://halloween-game-tumt.onrender.com";
-
-async function fetchPlayers() {
-  const res = await fetch(`${SERVER_URL}/api/players`);
-  const players = await res.json();
-  const box = document.getElementById("playerList");
-  box.innerHTML = players.map(
-    p => `
-      <div>
-        <b>${p.sessionId}</b> ${p.locked ? "🔒" : "🔓"}
-        <button onclick="lockPlayer('${p.sessionId}', true)">Lock</button>
-        <button onclick="lockPlayer('${p.sessionId}', false)">Unlock</button>
-        <button onclick="resetPlayer('${p.sessionId}')">Reset</button>
-      </div>`
-  ).join("");
-}
-
-async function lockPlayer(sessionId, locked) {
-  await fetch(`${SERVER_URL}/api/lock`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sessionId, locked }),
-  });
-  fetchPlayers();
-}
-
-async function resetPlayer(sessionId) {
-  await fetch(`${SERVER_URL}/api/reset`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sessionId }),
-  });
-  fetchPlayers();
-}
-
 
 <script>
-const API_URL = window.location.origin + '/api';
+const SERVER_URL = window.location.origin;
 let adminPassword = '';
 
 function login() {
   const password = document.getElementById('adminPassword').value;
   adminPassword = password;
 
-  fetch(`${API_URL}/admin/analytics`, {
+  fetch(`${SERVER_URL}/api/admin/analytics`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password })
@@ -342,6 +337,7 @@ function login() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('dashboard').classList.add('active');
     displayData(data);
+    refreshPlayers();
   })
   .catch(err => {
     document.getElementById('loginError').textContent = 'Invalid password!';
@@ -354,7 +350,7 @@ document.getElementById('adminPassword').addEventListener('keypress', (e) => {
 });
 
 function refreshData() {
-  fetch(`${API_URL}/admin/analytics`, {
+  fetch(`${SERVER_URL}/api/admin/analytics`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password: adminPassword })
@@ -364,9 +360,76 @@ function refreshData() {
   .catch(err => alert('Error refreshing data: ' + err.message));
 }
 
+function refreshPlayers() {
+  fetch(`${SERVER_URL}/api/players`)
+  .then(res => res.json())
+  .then(displayPlayers)
+  .catch(err => console.error('Error fetching players:', err));
+}
+
+function displayPlayers(players) {
+  const playersTable = document.getElementById('playersTable');
+  document.getElementById('statActivePlayers').textContent = players.length;
+  
+  if (players.length === 0) {
+    playersTable.innerHTML = '<tr><td colspan="5" class="empty-state">No active players</td></tr>';
+    return;
+  }
+
+  playersTable.innerHTML = players.map(p => {
+    const lastActivity = new Date(p.lastActivity);
+    const timeSince = Math.floor((Date.now() - lastActivity) / 1000);
+    const activityStr = timeSince < 60 ? `${timeSince}s ago` : 
+                       timeSince < 3600 ? `${Math.floor(timeSince/60)}m ago` :
+                       `${Math.floor(timeSince/3600)}h ago`;
+    
+    return `
+      <tr>
+        <td>${p.sessionId.slice(0, 8)}...</td>
+        <td>${p.difficulty ? `<span class="badge badge-${p.difficulty}">${p.difficulty}</span>` : 'N/A'}</td>
+        <td>${p.locked ? '<span class="badge badge-locked">🔒 Locked</span>' : '<span class="badge badge-complete">🔓 Active</span>'}</td>
+        <td>${activityStr}</td>
+        <td class="player-controls">
+          <button onclick="lockPlayer('${p.sessionId}', ${!p.locked})" class="${p.locked ? 'btn-secondary' : 'btn-danger'}">
+            ${p.locked ? '🔓 Unlock' : '🔒 Lock'}
+          </button>
+          <button onclick="resetPlayer('${p.sessionId}')" class="btn-secondary">🔄 Reset</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function lockPlayer(sessionId, locked) {
+  fetch(`${SERVER_URL}/api/lock`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId, locked })
+  })
+  .then(() => {
+    refreshPlayers();
+    alert(`Player ${locked ? 'locked' : 'unlocked'} successfully!`);
+  })
+  .catch(err => alert('Error: ' + err.message));
+}
+
+function resetPlayer(sessionId) {
+  if (!confirm('Reset this player\'s progress?')) return;
+  
+  fetch(`${SERVER_URL}/api/reset`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId })
+  })
+  .then(() => {
+    refreshPlayers();
+    alert('Player reset successfully!');
+  })
+  .catch(err => alert('Error: ' + err.message));
+}
+
 function displayData(data) {
   // Update stats
-  document.getElementById('statSessions').textContent = data.totalSessions;
   document.getElementById('statAttempts').textContent = data.totalAttempts;
   document.getElementById('statCompletions').textContent = data.totalCompletions;
   document.getElementById('statLocked').textContent = data.totalLocked;
@@ -401,7 +464,7 @@ function displayData(data) {
       <tr>
         <td><span class="badge badge-${a.type}">${a.type}</span></td>
         <td>${a.sessionId ? a.sessionId.slice(0, 8) + '...' : 'N/A'}</td>
-        <td><span class="badge badge-${a.difficulty || 'easy'}">${a.difficulty || 'N/A'}</span></td>
+        <td>${a.difficulty ? `<span class="badge badge-${a.difficulty}">${a.difficulty}</span>` : 'N/A'}</td>
         <td>${getActivityDetails(a)}</td>
         <td>${new Date(a.timestamp).toLocaleString()}</td>
       </tr>
@@ -427,7 +490,7 @@ function displayData(data) {
 
 function getActivityDetails(activity) {
   switch(activity.type) {
-    case 'completion':
+    case 'complete':
       return `Time: ${formatTime(activity.time)}, Hints: ${activity.hintsUsed || 0}`;
     case 'locked':
       return `Tab switches: ${activity.tabSwitches}`;
@@ -446,7 +509,7 @@ function formatTime(seconds) {
 }
 
 function exportData() {
-  fetch(`${API_URL}/admin/sessions`, {
+  fetch(`${SERVER_URL}/api/admin/sessions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password: adminPassword })
@@ -466,7 +529,7 @@ function exportData() {
 function clearData() {
   if (!confirm('Are you sure you want to delete ALL data? This cannot be undone!')) return;
 
-  fetch(`${API_URL}/admin/clear`, {
+  fetch(`${SERVER_URL}/api/admin/clear`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password: adminPassword })
@@ -491,12 +554,9 @@ function logout() {
 setInterval(() => {
   if (document.getElementById('dashboard').classList.contains('active')) {
     refreshData();
+    refreshPlayers();
   }
 }, 30000);
-
- <button onclick="fetchPlayers()">🔄 Refresh Players</button>
-<div id="playerList"></div>
-
 </script>
 </body>
 </html>
