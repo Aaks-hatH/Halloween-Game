@@ -1305,6 +1305,67 @@
   init();
 
 })();
+ // ===== BACKEND CONNECTION =====
+const SERVER_URL = "https://halloween-game-tumt.onrender.com";
+let ws = null;
+let sessionId = null;
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
+
+function connectWebSocket() {
+  const protocol = SERVER_URL.startsWith("https") ? "wss:" : "ws:";
+  const wsUrl = SERVER_URL.replace(/^https?/, protocol);
+  ws = new WebSocket(wsUrl);
+
+  ws.onopen = () => {
+    console.log("✅ Connected to backend");
+    reconnectAttempts = 0;
+  };
+
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === "session_id") sessionId = msg.sessionId;
+    if (msg.type === "lock_status" && msg.locked) {
+      alert("🔒 Your session was locked by admin!");
+      document.querySelectorAll("input,button").forEach((b) => (b.disabled = true));
+    }
+    if (msg.type === "lock_status" && !msg.locked) {
+      alert("🔓 Unlocked by admin!");
+      document.querySelectorAll("input,button").forEach((b) => (b.disabled = false));
+    }
+    if (msg.type === "reset") {
+      alert("🔄 Your progress has been reset!");
+      localStorage.clear();
+      location.reload();
+    }
+  };
+
+  ws.onclose = () => {
+    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+      setTimeout(connectWebSocket, 1000 * ++reconnectAttempts);
+    }
+  };
+}
+
+document.addEventListener("DOMContentLoaded", connectWebSocket);
+
+// Save progress and events to backend
+function saveProgress(progress) {
+  fetch(`${SERVER_URL}/api/session`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId, progress }),
+  });
+}
+
+function trackEvent(event, details = {}) {
+  fetch(`${SERVER_URL}/api/event`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId, event, details }),
+  });
+}
+
 </script>
 </body>
 </html>
