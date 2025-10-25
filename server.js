@@ -87,3 +87,9 @@ app.post("/api/reset", (req, res) => {
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`🚀 Backend running on port ${PORT}`));
+
+// Fallback for root route (optional message)
+app.get("/", (req, res) => {
+  res.send("🎃 Locked Dungeon backend is running! API base is /api/");
+});
+
