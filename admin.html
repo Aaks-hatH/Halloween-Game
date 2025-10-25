@@ -284,6 +284,42 @@
     </div>
   </div>
 </div>
+ 
+ const SERVER_URL = "https://halloween-game-tumt.onrender.com";
+
+async function fetchPlayers() {
+  const res = await fetch(`${SERVER_URL}/api/players`);
+  const players = await res.json();
+  const box = document.getElementById("playerList");
+  box.innerHTML = players.map(
+    p => `
+      <div>
+        <b>${p.sessionId}</b> ${p.locked ? "🔒" : "🔓"}
+        <button onclick="lockPlayer('${p.sessionId}', true)">Lock</button>
+        <button onclick="lockPlayer('${p.sessionId}', false)">Unlock</button>
+        <button onclick="resetPlayer('${p.sessionId}')">Reset</button>
+      </div>`
+  ).join("");
+}
+
+async function lockPlayer(sessionId, locked) {
+  await fetch(`${SERVER_URL}/api/lock`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId, locked }),
+  });
+  fetchPlayers();
+}
+
+async function resetPlayer(sessionId) {
+  await fetch(`${SERVER_URL}/api/reset`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId }),
+  });
+  fetchPlayers();
+}
+
 
 <script>
 const API_URL = window.location.origin + '/api';
