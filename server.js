@@ -27,7 +27,7 @@ let analytics = {
 };
 
 // Admin credentials
-const ADMIN_PASSWORD = "Aakshatadmin"; // Change this!
+const ADMIN_PASSWORD = "Password123"; // Change this!
 
 // Generate unique session IDs
 function generateSessionId() {
