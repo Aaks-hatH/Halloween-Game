@@ -80,19 +80,28 @@ wss.on("connection", (ws, request) => {
           ws.send(JSON.stringify({ type: "pong" }));
           break;
         
+        case "set_name":
+          session.playerName = data.playerName;
+          console.log(`👤 Player ${sessionId} set name: ${data.playerName}`);
+          break;
+        
         case "progress_update":
           session.progress = data.progress;
-          console.log(`📊 Progress update from ${sessionId}`);
+          if (data.progress.playerName) {
+            session.playerName = data.progress.playerName;
+          }
+          console.log(`📊 Progress update from ${session.playerName || sessionId}`);
           break;
         
         case "event":
           analytics[data.event] = analytics[data.event] || [];
           analytics[data.event].push({
             sessionId,
+            playerName: session.playerName,
             ...data.details,
             timestamp: Date.now()
           });
-          console.log(`📈 Event tracked: ${data.event} from ${sessionId}`);
+          console.log(`📈 Event tracked: ${data.event} from ${session.playerName || sessionId}`);
           break;
       }
     } catch (err) {
