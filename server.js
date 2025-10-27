@@ -12,13 +12,15 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static('public')); // Serve static files
+app.use(express.static('public'));
 
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
 
-// In-memory storage (replace with database in production)
-let sessions = new Map(); // sessionId -> { ws, locked, progress, startTime, difficulty }
+// IMPORTANT: WebSocket server with noServer option for proper upgrade handling
+const wss = new WebSocketServer({ noServer: true });
+
+// In-memory storage
+let sessions = new Map();
 let analytics = {
   attempts: [],
   completions: [],
@@ -26,16 +28,23 @@ let analytics = {
   hints: []
 };
 
-// Admin credentials
-const ADMIN_PASSWORD = "Password123"; // Change this!
+const ADMIN_PASSWORD = "Password123";
 
-// Generate unique session IDs
 function generateSessionId() {
   return Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
 }
 
+// Handle WebSocket upgrade
+server.on('upgrade', (request, socket, head) => {
+  console.log('🔄 WebSocket upgrade request received');
+  
+  wss.handleUpgrade(request, socket, head, (ws) => {
+    wss.emit('connection', ws, request);
+  });
+});
+
 // WebSocket handling
-wss.on("connection", (ws) => {
+wss.on("connection", (ws, request) => {
   const sessionId = generateSessionId();
   sessions.set(sessionId, { 
     ws, 
@@ -46,7 +55,13 @@ wss.on("connection", (ws) => {
   });
 
   console.log(`🟢 Player connected: ${sessionId} (Total: ${sessions.size})`);
-  ws.send(JSON.stringify({ type: "session_id", sessionId }));
+  
+  // Send session ID immediately
+  try {
+    ws.send(JSON.stringify({ type: "session_id", sessionId }));
+  } catch (err) {
+    console.error('❌ Failed to send session_id:', err);
+  }
 
   // Heartbeat
   ws.isAlive = true;
@@ -67,16 +82,17 @@ wss.on("connection", (ws) => {
         
         case "progress_update":
           session.progress = data.progress;
+          console.log(`📊 Progress update from ${sessionId}`);
           break;
         
         case "event":
-          // Track analytics
           analytics[data.event] = analytics[data.event] || [];
           analytics[data.event].push({
             sessionId,
             ...data.details,
             timestamp: Date.now()
           });
+          console.log(`📈 Event tracked: ${data.event} from ${sessionId}`);
           break;
       }
     } catch (err) {
@@ -97,7 +113,10 @@ wss.on("connection", (ws) => {
 // Heartbeat to detect broken connections
 const heartbeat = setInterval(() => {
   wss.clients.forEach((ws) => {
-    if (ws.isAlive === false) return ws.terminate();
+    if (ws.isAlive === false) {
+      console.log('💀 Terminating dead connection');
+      return ws.terminate();
+    }
     ws.isAlive = false;
     ws.ping();
   });
@@ -109,17 +128,14 @@ wss.on('close', () => {
 
 // ============ REST API ROUTES ============
 
-// Root route
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Admin dashboard
 app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-// Get all active sessions
 app.get("/api/players", (req, res) => {
   const list = Array.from(sessions.entries()).map(([id, session]) => ({
     sessionId: id,
@@ -132,7 +148,6 @@ app.get("/api/players", (req, res) => {
   res.json(list);
 });
 
-// Lock or unlock a player
 app.post("/api/lock", (req, res) => {
   const { sessionId, locked } = req.body;
   const session = sessions.get(sessionId);
@@ -156,7 +171,6 @@ app.post("/api/lock", (req, res) => {
   }
 });
 
-// Reset a player's progress
 app.post("/api/reset", (req, res) => {
   const { sessionId } = req.body;
   const session = sessions.get(sessionId);
@@ -177,7 +191,6 @@ app.post("/api/reset", (req, res) => {
   }
 });
 
-// Track event from client
 app.post("/api/event", (req, res) => {
   const { sessionId, event, details } = req.body;
   
@@ -194,7 +207,6 @@ app.post("/api/event", (req, res) => {
   res.json({ success: true });
 });
 
-// Admin: Get analytics (requires password)
 app.post("/api/admin/analytics", (req, res) => {
   const { password } = req.body;
   
@@ -202,13 +214,11 @@ app.post("/api/admin/analytics", (req, res) => {
     return res.status(401).json({ error: "Unauthorized" });
   }
   
-  // Calculate statistics
   const attempts = analytics.attempt || [];
   const completions = analytics.complete || [];
   const locked = analytics.locked || [];
   const hints = analytics.hint || [];
   
-  // Calculate completion times by difficulty
   const completionsByDiff = {
     easy: completions.filter(c => c.difficulty === 'easy'),
     medium: completions.filter(c => c.difficulty === 'medium'),
@@ -228,7 +238,6 @@ app.post("/api/admin/analytics", (req, res) => {
   const mediumStats = calcStats(completionsByDiff.medium);
   const hardStats = calcStats(completionsByDiff.hard);
   
-  // Recent activity (last 50 events)
   const allEvents = [
     ...attempts.map(e => ({ ...e, type: 'attempt' })),
     ...completions.map(e => ({ ...e, type: 'complete' })),
@@ -253,7 +262,6 @@ app.post("/api/admin/analytics", (req, res) => {
   });
 });
 
-// Admin: Get all sessions
 app.post("/api/admin/sessions", (req, res) => {
   const { password } = req.body;
   
@@ -275,7 +283,6 @@ app.post("/api/admin/sessions", (req, res) => {
   });
 });
 
-// Admin: Clear all data
 app.post("/api/admin/clear", (req, res) => {
   const { password } = req.body;
   
@@ -294,12 +301,12 @@ app.post("/api/admin/clear", (req, res) => {
   res.json({ success: true });
 });
 
-// Health check
 app.get("/health", (req, res) => {
   res.json({ 
     status: "healthy", 
     sessions: sessions.size,
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    websocketClients: wss.clients.size
   });
 });
 
@@ -308,9 +315,9 @@ server.listen(PORT, () => {
   console.log(`🚀 Backend running on port ${PORT}`);
   console.log(`📊 Admin panel: http://localhost:${PORT}/admin`);
   console.log(`🎮 Game: http://localhost:${PORT}/`);
+  console.log(`🔌 WebSocket server ready`);
 });
 
-// Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received, closing server...');
   server.close(() => {
