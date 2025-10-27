@@ -29,12 +29,30 @@ let analytics = {
 };
 
  /*
-===========================================================
-  © 2025 Aakshat. All rights reserved.
-  Developed by Aakshat
-  Unauthorized copying or distribution of this code,
-  via any medium, is strictly prohibited.
-===========================================================
+=====================================================================
+  © 2025 Aakshat. All Rights Reserved.
+  Author: Aakshat
+  Project: Halloween
+  Created: 9/29/25
+  
+  This source code is the intellectual property of Aakshat Hariharan.
+  It may not be copied, modified, distributed, or used 
+  for commercial purposes without explicit written permission 
+  from the author.
+
+  Redistribution of this code or any portion of it, in any form 
+  (including but not limited to compiled binaries, minified files, 
+  or derivative works), without authorization is strictly prohibited.
+
+  By accessing, viewing, or using this code, you agree to respect 
+  the author's intellectual property rights and abide by 
+  all applicable copyright and license terms.
+
+  If you wish to use or contribute to this project, please contact:
+ Hariharanaakshat@gmail.com
+
+  Last Updated: 10/27/31
+=====================================================================
 */
 
 const ADMIN_PASSWORD = "^A^A^K^S^H^AT^";
