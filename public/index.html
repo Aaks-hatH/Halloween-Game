@@ -466,23 +466,19 @@
   let reconnectAttempts = 0;
   const MAX_RECONNECT_ATTEMPTS = 5;
   let isConnected = false;
-
-  function connectWebSocket() {
-    // Fix: Remove protocol from SERVER_URL first, then add correct one
-    const host = SERVER_URL.replace(/^https?:\/\//, '');
-    const protocol = "wss:";
-    const wsUrl = `${protocol}//${host}`;
-    
-    console.log('🔌 Attempting to connect to:', wsUrl);
-    
-    try {
-      ws = new WebSocket(wsUrl);
-    } catch (err) {
-      console.error('❌ Failed to create WebSocket:', err);
-      // Continue without WebSocket - game will still work locally
-      isConnected = false;
-      return;
-    }
+ 
+function connectWebSocket() {
+  const wsUrl = "wss://halloween-game-1.onrender.com";
+  
+  console.log('🔌 Attempting to connect to:', wsUrl);
+  
+  try {
+    ws = new WebSocket(wsUrl);
+  } catch (err) {
+    console.error('❌ Failed to create WebSocket:', err);
+    isConnected = false;
+    return;
+  }
 
     ws.onopen = () => {
       console.log("✅ Connected to backend");
