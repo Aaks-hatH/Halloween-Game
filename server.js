@@ -63,7 +63,7 @@ function generateSessionId() {
 
 // Handle WebSocket upgrade
 server.on('upgrade', (request, socket, head) => {
-  console.log('🔄 WebSocket upgrade request received');
+  console.log(' WebSocket upgrade request received');
   
   wss.handleUpgrade(request, socket, head, (ws) => {
     wss.emit('connection', ws, request);
@@ -118,7 +118,7 @@ wss.on("connection", (ws, request) => {
           if (data.progress.playerName) {
             session.playerName = data.progress.playerName;
           }
-          console.log(`📊 Progress update from ${session.playerName || sessionId}`);
+          console.log(` Progress update from ${session.playerName || sessionId}`);
           break;
         
         case "event":
@@ -129,7 +129,7 @@ wss.on("connection", (ws, request) => {
             ...data.details,
             timestamp: Date.now()
           });
-          console.log(`📈 Event tracked: ${data.event} from ${session.playerName || sessionId}`);
+          console.log(` Event tracked: ${data.event} from ${session.playerName || sessionId}`);
           break;
       }
     } catch (err) {
@@ -228,7 +228,7 @@ app.post("/api/reset", (req, res) => {
   
   try {
     session.ws.send(JSON.stringify({ type: "reset" }));
-    console.log(`🔄 Reset progress for ${session.playerName || sessionId}`);
+    console.log(` Reset progress for ${session.playerName || sessionId}`);
     res.json({ success: true });
   } catch (err) {
     console.error("Error sending reset:", err);
@@ -343,7 +343,7 @@ app.post("/api/admin/clear", (req, res) => {
     hints: []
   };
   
-  console.log("🗑️ All analytics data cleared");
+  console.log(" All analytics data cleared");
   res.json({ success: true });
 });
 
@@ -358,10 +358,10 @@ app.get("/health", (req, res) => {
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
-  console.log(`🚀 Backend running on port ${PORT}`);
-  console.log(`📊 Admin panel: http://localhost:${PORT}/admin`);
-  console.log(`🎮 Game: http://localhost:${PORT}/`);
-  console.log(`🔌 WebSocket server ready`);
+  console.log(` Backend running on port ${PORT}`);
+  console.log(` Admin panel: http://localhost:${PORT}/admin`);
+  console.log(` Game: http://localhost:${PORT}/`);
+  console.log(` WebSocket server ready`);
 });
 
 process.on('SIGTERM', () => {
