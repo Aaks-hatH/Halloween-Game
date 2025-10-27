@@ -170,12 +170,19 @@ app.post("/api/lock", (req, res) => {
   session.locked = locked;
   
   try {
-    session.ws.send(JSON.stringify({ 
+    const message = JSON.stringify({ 
       type: "lock_status", 
-      locked 
-    }));
-    console.log(`${locked ? "🔒" : "🔓"} Player ${session.playerName || sessionId} ${locked ? 'locked' : 'unlocked'}`);
-    res.json({ success: true });
+      locked: locked
+    });
+    
+    if (session.ws.readyState === 1) { // 1 = OPEN
+      session.ws.send(message);
+      console.log(`${locked ? "🔒" : "🔓"} Player ${session.playerName || sessionId} ${locked ? 'locked' : 'unlocked'} - Message sent`);
+      res.json({ success: true });
+    } else {
+      console.log(`⚠️ WebSocket not open for ${session.playerName || sessionId}, state: ${session.ws.readyState}`);
+      res.status(500).json({ error: "WebSocket not connected" });
+    }
   } catch (err) {
     console.error("Error sending lock status:", err);
     res.status(500).json({ error: "Failed to send lock status" });
