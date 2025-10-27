@@ -255,7 +255,7 @@
           </tr>
         </thead>
         <tbody id="playersTable">
-          <tr><td colspan="5" class="empty-state">No active players</td></tr>
+          <tr><td colspan="6" class="empty-state">No active players</td></tr>
         </tbody>
       </table>
     </div>
@@ -373,7 +373,7 @@ function displayPlayers(players) {
   document.getElementById('statActivePlayers').textContent = players.length;
   
   if (players.length === 0) {
-    playersTable.innerHTML = '<tr><td colspan="5" class="empty-state">No active players</td></tr>';
+    playersTable.innerHTML = '<tr><td colspan="6" class="empty-state">No active players</td></tr>';
     return;
   }
 
@@ -384,9 +384,13 @@ function displayPlayers(players) {
                        timeSince < 3600 ? `${Math.floor(timeSince/60)}m ago` :
                        `${Math.floor(timeSince/3600)}h ago`;
     
+    const displayName = p.playerName || 'Anonymous';
+    const sessionIdShort = p.sessionId.slice(0, 8);
+    
     return `
       <tr>
-        <td>${p.sessionId.slice(0, 8)}...</td>
+        <td><strong>${displayName}</strong></td>
+        <td>${sessionIdShort}...</td>
         <td>${p.difficulty ? `<span class="badge badge-${p.difficulty}">${p.difficulty}</span>` : 'N/A'}</td>
         <td>${p.locked ? '<span class="badge badge-locked">🔒 Locked</span>' : '<span class="badge badge-complete">🔓 Active</span>'}</td>
         <td>${activityStr}</td>
