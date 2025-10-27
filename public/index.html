@@ -581,7 +581,15 @@
     try {
       ws.send(JSON.stringify({
         type: "progress_update",
-        progress: { difficulty, solved, lives, startTime, hintsUsed, tabSwitchCount }
+        progress: { 
+          difficulty, 
+          solved, 
+          lives, 
+          startTime, 
+          hintsUsed, 
+          tabSwitchCount,
+          playerName  // Include player name in progress
+        }
       }));
       console.log('📤 Progress sent');
     } catch (err) {
@@ -598,13 +606,87 @@
       ws.send(JSON.stringify({
         type: "event",
         event: event,
-        details: { ...details, sessionId }
+        details: { 
+          ...details, 
+          sessionId,
+          playerName  // Include player name in events
+        }
       }));
       console.log('📊 Event tracked:', event);
     } catch (err) {
       console.error('Failed to track:', err);
     }
   }
+
+  // Show name prompt before difficulty screen
+  function showNamePrompt() {
+    // Check if name already saved
+    const savedName = safeGetItem('player_name');
+    if (savedName) {
+      playerName = savedName;
+      showSessionId();
+      return;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'difficulty-screen';
+    overlay.innerHTML = `
+      <div class="difficulty-content">
+        <h2 style="margin-bottom: 20px; font-size: 2.5rem;">👻 Welcome to the Dungeon 👻</h2>
+        <p style="margin-bottom: 30px; font-size: 1.2rem; color: #ffb366;">What shall we call you, brave soul?</p>
+        <input 
+          type="text" 
+          id="nameInput" 
+          placeholder="Enter your name" 
+          maxlength="20"
+          style="width: 100%; padding: 15px; margin-bottom: 20px; font-size: 1.3rem;"
+          autofocus
+        >
+        <button class="difficulty-btn" onclick="submitName()">
+          Continue
+        </button>
+        <p style="margin-top: 15px; font-size: 0.9rem; color: #cc7700; font-style: italic;">
+          This name will be visible to the game master
+        </p>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // Allow Enter key to submit
+    document.getElementById('nameInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        window.submitName();
+      }
+    });
+  }
+
+  window.submitName = function() {
+    const nameInput = document.getElementById('nameInput');
+    const name = sanitizeInput(nameInput.value || '').trim();
+    
+    if (!name || name.length < 2) {
+      alert('Please enter a name (at least 2 characters)');
+      return;
+    }
+    
+    playerName = name;
+    safeSetItem('player_name', playerName);
+    
+    // Remove name prompt
+    const overlay = document.querySelector('.difficulty-screen');
+    if (overlay) overlay.remove();
+    
+    // Send name to server if connected
+    if (sessionId && isConnected) {
+      sendPlayerName();
+    }
+    
+    // Update session display
+    showSessionId();
+    
+    // Show difficulty screen
+    showDifficultyScreen();
+  };
 
   // Connect immediately (but don't block if it fails)
   try {
@@ -1410,8 +1492,20 @@
     const hasProgress = loadProgress();
     
     if (!hasProgress && !difficulty) {
-      showDifficultyScreen();
+      // Check if player already has a name
+      const savedName = safeGetItem('player_name');
+      if (savedName) {
+        playerName = savedName;
+        showDifficultyScreen();
+      } else {
+        showNamePrompt();
+      }
     } else if (difficulty) {
+      // Load saved name if available
+      const savedName = safeGetItem('player_name');
+      if (savedName) {
+        playerName = savedName;
+      }
       renderRiddles();
       updateProgressDisplay();
       updateLivesDisplay();
