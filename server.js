@@ -55,7 +55,7 @@ let analytics = {
 =====================================================================
 */
 
-const ADMIN_PASSWORD = "^A^A^K^S^H^AT^";
+const ADMIN_PASSWORD = "Purple&OrangeMouse^2";
 
 function generateSessionId() {
   return Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
