@@ -29,7 +29,6 @@
   }
   .subtitle { margin-bottom: 14px; opacity: .9; }
   
-  /* Floating ghosts */
   .ghost {
     position: fixed;
     font-size: 3rem;
@@ -43,7 +42,6 @@
     100% { transform: translateX(calc(100vw + 100px)) translateY(-50px) rotate(360deg); }
   }
   
-  /* Fog effect */
   .fog {
     position: fixed;
     bottom: 0;
@@ -60,7 +58,6 @@
     50% { opacity: 0.5; }
   }
   
-  /* Timer */
   .timer-container {
     position: fixed;
     top: 20px;
@@ -79,7 +76,6 @@
     50% { opacity: 0.5; }
   }
   
-  /* Difficulty selector */
   .difficulty-screen {
     position: fixed;
     top: 0;
@@ -115,7 +111,6 @@
   }
   .difficulty-btn:hover { transform: scale(1.05); }
   
-  /* Admin panel */
   .admin-toggle {
     position: fixed;
     bottom: 20px;
@@ -135,36 +130,6 @@
     transition: opacity 0.3s;
   }
   .admin-toggle:hover { opacity: 1; }
-  
-  /* Music controls */
-  .music-toggle {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: rgba(20,20,20,0.9);
-    border: 2px solid #ff8c00;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 10002;
-    font-size: 1.5rem;
-    transition: all 0.3s;
-  }
-  .music-toggle:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 20px rgba(255,140,0,0.5);
-  }
-  .music-toggle.playing {
-    animation: musicPulse 2s infinite;
-  }
-  @keyframes musicPulse {
-    0%, 100% { box-shadow: 0 0 10px rgba(255,140,0,0.3); }
-    50% { box-shadow: 0 0 25px rgba(255,140,0,0.7); }
-  }
   
   .admin-panel {
     position: fixed;
@@ -376,18 +341,15 @@
 </head>
 <body>
 
-<!-- Floating ghosts -->
 <div class="ghost" style="top: 10%; animation-delay: 0s;">👻</div>
 <div class="ghost" style="top: 30%; animation-delay: 5s;">🎃</div>
 <div class="ghost" style="top: 60%; animation-delay: 10s;">💀</div>
 <div class="fog"></div>
 
-<!-- Timer -->
 <div class="timer-container" id="timerContainer" style="display: none;">
   <div class="timer" id="timer">⏱️ 0:00</div>
 </div>
 
-<!-- Admin toggle -->
 <div class="admin-toggle" id="adminToggle" title="Admin Panel">⚙️</div>
 
 <h1>💀 The Locked Dungeon 💀</h1>
@@ -436,7 +398,6 @@
   </div>
 </div>
 
-<!-- Admin Panel -->
 <div class="admin-panel" id="adminPanel">
   <h2 style="margin-bottom: 20px;">⚙️ Admin Panel</h2>
   
@@ -498,17 +459,157 @@
 (function() {
   'use strict';
   
-  // Encrypted credentials (Base64 encoded)
+  // ===== BACKEND CONNECTION (AT TOP) =====
+  const SERVER_URL = "https://halloween-game-1.onrender.com"; // Your server URL
+  let ws = null;
+  let sessionId = null;
+  let reconnectAttempts = 0;
+  const MAX_RECONNECT_ATTEMPTS = 5;
+  let isConnected = false;
+
+  function connectWebSocket() {
+    // Fix: Remove protocol from SERVER_URL first, then add correct one
+    const host = SERVER_URL.replace(/^https?:\/\//, '');
+    const protocol = "wss:";
+    const wsUrl = `${protocol}//${host}`;
+    
+    console.log('🔌 Attempting to connect to:', wsUrl);
+    
+    try {
+      ws = new WebSocket(wsUrl);
+    } catch (err) {
+      console.error('❌ Failed to create WebSocket:', err);
+      // Continue without WebSocket - game will still work locally
+      isConnected = false;
+      return;
+    }
+
+    ws.onopen = () => {
+      console.log("✅ Connected to backend");
+      isConnected = true;
+      reconnectAttempts = 0;
+    };
+
+    ws.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        console.log('📨 Received:', msg);
+        
+        if (msg.type === "session_id") {
+          sessionId = msg.sessionId;
+          console.log('🆔 Session ID:', sessionId);
+          showSessionId();
+        }
+        
+        if (msg.type === "lock_status" && msg.locked) {
+          alert("🔒 Your session was locked by admin!");
+          lockPage();
+        }
+        
+        if (msg.type === "lock_status" && !msg.locked) {
+          alert("🔓 Unlocked by admin!");
+          location.reload();
+        }
+        
+        if (msg.type === "reset") {
+          alert("🔄 Progress reset by admin!");
+          localStorage.clear();
+          location.reload();
+        }
+      } catch (err) {
+        console.error('❌ Message error:', err);
+      }
+    };
+
+    ws.onclose = (event) => {
+      console.log('🔴 Disconnected - Code:', event.code, 'Reason:', event.reason);
+      isConnected = false;
+      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        console.log(`🔄 Reconnecting... (Attempt ${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})`);
+        setTimeout(connectWebSocket, 2000 * (reconnectAttempts + 1));
+        reconnectAttempts++;
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('❌ WebSocket error:', error);
+      console.log('ℹ️ This is normal if server is not running. Game will work without backend.');
+    };
+  }
+
+  function showSessionId() {
+    if (!sessionId) return;
+    let display = document.getElementById('sessionDisplay');
+    if (!display) {
+      display = document.createElement('div');
+      display.id = 'sessionDisplay';
+      display.style.cssText = `
+        position: fixed; bottom: 80px; right: 20px;
+        background: rgba(20,20,20,0.9); border: 2px solid #ff8c00;
+        border-radius: 10px; padding: 10px 15px; z-index: 10000;
+        font-size: 0.9rem; color: #ff8c00; font-family: monospace;
+      `;
+      document.body.appendChild(display);
+    }
+    display.innerHTML = `🆔 ${sessionId.slice(0, 8)}`;
+  }
+
+  function sendProgressUpdate() {
+    if (!ws || !isConnected || !sessionId) {
+      console.log('⚠️ WebSocket not connected, progress not synced');
+      return;
+    }
+    try {
+      ws.send(JSON.stringify({
+        type: "progress_update",
+        progress: { difficulty, solved, lives, startTime, hintsUsed, tabSwitchCount }
+      }));
+      console.log('📤 Progress sent');
+    } catch (err) {
+      console.error('Failed to send progress:', err);
+    }
+  }
+
+  function trackEventBackend(event, details = {}) {
+    if (!ws || !isConnected) {
+      console.log('⚠️ WebSocket not connected, event not tracked:', event);
+      return;
+    }
+    try {
+      ws.send(JSON.stringify({
+        type: "event",
+        event: event,
+        details: { ...details, sessionId }
+      }));
+      console.log('📊 Event tracked:', event);
+    } catch (err) {
+      console.error('Failed to track:', err);
+    }
+  }
+
+  // Connect immediately (but don't block if it fails)
+  try {
+    connectWebSocket();
+  } catch (err) {
+    console.log('⚠️ Could not connect to backend, game will work offline');
+  }
+
+  // Heartbeat
+  setInterval(() => {
+    if (ws && isConnected) {
+      ws.send(JSON.stringify({ type: "ping" }));
+    }
+  }, 30000);
+  
+  // ===== EXISTING GAME CODE =====
   const ENCRYPTED_ADMIN_USER = atob('QWFrcy1oYXRI');
   const ENCRYPTED_ADMIN_PASS = atob('QWFrc2hhdGFkbWlu');
   let isAdminAuthenticated = false;
   
-  // Decrypt function for answers
   function decrypt(encoded) {
     return atob(encoded);
   }
   
-  // Riddles data (answers encrypted)
   const riddlesByDifficulty = {
     easy: [
       {id: 1, title: "Riddle 1", text: "I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?", answer: decrypt('Rw==')},
@@ -557,7 +658,6 @@
   let firstWarningShown = false;
   let isLocked = false;
 
-  // Sanitize input to prevent injection attacks
   function sanitizeInput(input) {
     if (typeof input !== 'string') return '';
     return input
@@ -588,7 +688,6 @@
     }
   }
 
-  // Analytics
   function trackEvent(event, data = {}) {
     try {
       const sanitizedEvent = sanitizeInput(event);
@@ -596,6 +695,9 @@
       if (!analytics[sanitizedEvent]) analytics[sanitizedEvent] = [];
       analytics[sanitizedEvent].push({...data, timestamp: Date.now()});
       safeSetItem('dungeon_analytics', JSON.stringify(analytics));
+      
+      // SEND TO BACKEND
+      trackEventBackend(sanitizedEvent, data);
     } catch (e) {
       console.error('Analytics error:', e);
     }
@@ -662,7 +764,6 @@
     return Math.floor((Date.now() - startTime) / 1000);
   }
 
-  // Difficulty selection
   function showDifficultyScreen() {
     const overlay = document.createElement('div');
     overlay.className = 'difficulty-screen';
@@ -723,7 +824,6 @@
     init();
   };
 
-  // Save/Load progress
   function saveProgress() {
     try {
       const progress = {
@@ -737,6 +837,9 @@
         tabSwitchCount
       };
       safeSetItem('dungeon_progress', JSON.stringify(progress));
+      
+      // SEND TO BACKEND
+      sendProgressUpdate();
     } catch (e) {
       console.error('Save error:', e);
     }
@@ -1043,7 +1146,6 @@
     saveProgress();
   });
 
-  // Admin functions
   document.getElementById('adminToggle').addEventListener('click', () => {
     document.getElementById('adminPanel').classList.toggle('active');
   });
@@ -1125,7 +1227,6 @@
     a.click();
   };
 
-  // Anti-cheat
   document.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     return false;
@@ -1153,7 +1254,6 @@
     input.style.webkitUserSelect = 'text';
   });
 
-  // Tab switch detection
   document.addEventListener('visibilitychange', () => {
     if (isLocked) return;
     
@@ -1272,7 +1372,6 @@
     overlay.appendChild(lockBox);
     document.body.appendChild(overlay);
     
-    // Keep admin toggle and panel accessible
     const adminToggle = document.getElementById('adminToggle');
     const adminPanel = document.getElementById('adminPanel');
     if (adminToggle) adminToggle.style.zIndex = '10002';
@@ -1285,7 +1384,6 @@
     });
   }
 
-  // Initialize
   function init() {
     const wasLocked = checkInitialLock();
     if (wasLocked) return;
@@ -1305,67 +1403,6 @@
   init();
 
 })();
- // ===== BACKEND CONNECTION =====
-const SERVER_URL = "https://halloween-game-1.onrender.com";
-let ws = null;
-let sessionId = null;
-let reconnectAttempts = 0;
-const MAX_RECONNECT_ATTEMPTS = 5;
-
-function connectWebSocket() {
-  const protocol = SERVER_URL.startsWith("https") ? "wss:" : "ws:";
-  const wsUrl = SERVER_URL.replace(/^https?/, protocol);
-  ws = new WebSocket(wsUrl);
-
-  ws.onopen = () => {
-    console.log("✅ Connected to backend");
-    reconnectAttempts = 0;
-  };
-
-  ws.onmessage = (e) => {
-    const msg = JSON.parse(e.data);
-    if (msg.type === "session_id") sessionId = msg.sessionId;
-    if (msg.type === "lock_status" && msg.locked) {
-      alert("🔒 Your session was locked by admin!");
-      document.querySelectorAll("input,button").forEach((b) => (b.disabled = true));
-    }
-    if (msg.type === "lock_status" && !msg.locked) {
-      alert("🔓 Unlocked by admin!");
-      document.querySelectorAll("input,button").forEach((b) => (b.disabled = false));
-    }
-    if (msg.type === "reset") {
-      alert("🔄 Your progress has been reset!");
-      localStorage.clear();
-      location.reload();
-    }
-  };
-
-  ws.onclose = () => {
-    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-      setTimeout(connectWebSocket, 1000 * ++reconnectAttempts);
-    }
-  };
-}
-
-document.addEventListener("DOMContentLoaded", connectWebSocket);
-
-// Save progress and events to backend
-function saveProgress(progress) {
-  fetch(`${SERVER_URL}/api/session`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sessionId, progress }),
-  });
-}
-
-function trackEvent(event, details = {}) {
-  fetch(`${SERVER_URL}/api/event`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sessionId, event, details }),
-  });
-}
-
 </script>
 </body>
 </html>
