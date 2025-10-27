@@ -485,42 +485,44 @@
       reconnectAttempts = 0;
     };
 
-    ws.onmessage = (e) => {
-      try {
-        const msg = JSON.parse(e.data);
-        console.log('📨 Received:', msg);
-        
-        if (msg.type === "session_id") {
-          sessionId = msg.sessionId;
-          console.log('🆔 Session ID:', sessionId);
-          
-          // Send player name to server after getting session ID
-          if (playerName) {
-            sendPlayerName();
-          }
-          
-          showSessionId();
-        }
-        
-        if (msg.type === "lock_status" && msg.locked) {
-          alert("🔒 Your session was locked by admin!");
-          lockPage();
-        }
-        
-        if (msg.type === "lock_status" && !msg.locked) {
-          alert("🔓 Unlocked by admin!");
-          location.reload();
-        }
-        
-        if (msg.type === "reset") {
-          alert("🔄 Progress reset by admin!");
-          localStorage.clear();
-          location.reload();
-        }
-      } catch (err) {
-        console.error('❌ Message error:', err);
+   ws.onmessage = (e) => {
+  try {
+    const msg = JSON.parse(e.data);
+    console.log('📨 Received:', msg);
+    
+    if (msg.type === "session_id") {
+      sessionId = msg.sessionId;
+      console.log('🆔 Session ID:', sessionId);
+      
+      if (playerName) {
+        sendPlayerName();
       }
-    };
+      
+      showSessionId();
+    }
+    
+    if (msg.type === "lock_status" && msg.locked) {
+      alert("🔒 Your session was locked by admin!");
+      lockPage();
+    }
+    
+    if (msg.type === "lock_status" && !msg.locked) {
+      // Clear lock BEFORE reload
+      localStorage.removeItem('dungeon_locked');
+      localStorage.removeItem('tab_switch_count');
+      alert("🔓 Unlocked by admin! Reloading...");
+      setTimeout(() => location.reload(), 500);
+    }
+    
+    if (msg.type === "reset") {
+      alert("🔄 Progress reset by admin!");
+      localStorage.clear();
+      location.reload();
+    }
+  } catch (err) {
+    console.error('❌ Message error:', err);
+  }
+};
 
     ws.onclose = (event) => {
       console.log('🔴 Disconnected - Code:', event.code, 'Reason:', event.reason);
