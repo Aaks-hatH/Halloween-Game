@@ -51,7 +51,8 @@ wss.on("connection", (ws, request) => {
     locked: false, 
     progress: {}, 
     startTime: Date.now(),
-    lastActivity: Date.now()
+    lastActivity: Date.now(),
+    playerName: null
   });
 
   console.log(`🟢 Player connected: ${sessionId} (Total: ${sessions.size})`);
@@ -148,6 +149,7 @@ app.get("/admin", (req, res) => {
 app.get("/api/players", (req, res) => {
   const list = Array.from(sessions.entries()).map(([id, session]) => ({
     sessionId: id,
+    playerName: session.playerName || null,
     locked: session.locked,
     progress: session.progress,
     startTime: session.startTime,
@@ -172,7 +174,7 @@ app.post("/api/lock", (req, res) => {
       type: "lock_status", 
       locked 
     }));
-    console.log(`${locked ? "🔒" : "🔓"} Player ${sessionId} ${locked ? 'locked' : 'unlocked'}`);
+    console.log(`${locked ? "🔒" : "🔓"} Player ${session.playerName || sessionId} ${locked ? 'locked' : 'unlocked'}`);
     res.json({ success: true });
   } catch (err) {
     console.error("Error sending lock status:", err);
@@ -192,7 +194,7 @@ app.post("/api/reset", (req, res) => {
   
   try {
     session.ws.send(JSON.stringify({ type: "reset" }));
-    console.log(`🔄 Reset progress for ${sessionId}`);
+    console.log(`🔄 Reset progress for ${session.playerName || sessionId}`);
     res.json({ success: true });
   } catch (err) {
     console.error("Error sending reset:", err);
@@ -280,6 +282,7 @@ app.post("/api/admin/sessions", (req, res) => {
   
   const allSessions = Array.from(sessions.entries()).map(([id, session]) => ({
     sessionId: id,
+    playerName: session.playerName,
     locked: session.locked,
     progress: session.progress,
     startTime: session.startTime,
