@@ -28,7 +28,16 @@ let analytics = {
   hints: []
 };
 
-const ADMIN_PASSWORD = "Password123";
+ /*
+===========================================================
+  © 2025 Aakshat. All rights reserved.
+  Developed by Aakshat
+  Unauthorized copying or distribution of this code,
+  via any medium, is strictly prohibited.
+===========================================================
+*/
+
+const ADMIN_PASSWORD = "^A^A^K^S^H^AT^";
 
 function generateSessionId() {
   return Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
@@ -344,3 +353,4 @@ process.on('SIGTERM', () => {
     process.exit(0);
   });
 });
+
