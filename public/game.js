@@ -401,81 +401,129 @@
 
   /* Admin UI */
   let isAdminAuthenticated = false;
-  window.adminLogin = function(){
-    const pass = sanitizeInput(document.getElementById('adminPassword').value || '');
-    if (pass === decrypt(ENCRYPTED_ADMIN_PASS)) {
-      isAdminAuthenticated = true;
-      document.getElementById('adminLogin').style.display = 'none';
-      document.getElementById('adminContent').style.display = 'block';
-      document.getElementById('adminStats').style.display = 'block';
-      document.getElementById('adminControls').style.display = 'block';
-      updateAdminStats();
-      alert('✅ Admin unlocked (local). For server-wide admin use the server admin page.');
-    } else {
-      alert('Incorrect password!');
-    }
-  };
 
-  window.closeAdmin = function(){ document.getElementById('adminPanel')?.classList.remove('active'); };
-
-  function updateAdminStats(){
-    const stats = getAnalytics();
-    const sAttempts = document.getElementById('statAttempts');
-    const sCompletions = document.getElementById('statCompletions');
-    const sLocked = document.getElementById('statLocked');
-    const sAvg = document.getElementById('statAvgTime');
-    const sBest = document.getElementById('statBestTime');
-    const sHints = document.getElementById('statHints');
-    if (sAttempts) sAttempts.textContent = stats.attempts;
-    if (sCompletions) sCompletions.textContent = stats.completions;
-    if (sLocked) sLocked.textContent = stats.locked;
-    if (sAvg) sAvg.textContent = formatTime(Math.floor(stats.avgTime));
-    if (sBest) sBest.textContent = stats.bestTime ? formatTime(stats.bestTime) : '--';
-    if (sHints) sHints.textContent = stats.hints;
+window.adminLogin = function(){
+  const pass = sanitizeInput(document.getElementById('adminPassword').value || '');
+  if (pass === decrypt(ENCRYPTED_ADMIN_PASS)) {
+    isAdminAuthenticated = true;
+    document.getElementById('adminLogin').style.display = 'none';
+    document.getElementById('adminContent').style.display = 'block';
+    document.getElementById('adminStats').style.display = 'block';
+    document.getElementById('adminControls').style.display = 'block';
+    updateAdminStats();
+    alert('✅ Admin authenticated successfully!');
+  } else {
+    alert('❌ Incorrect password!');
   }
+};
 
-  window.resetProgress = function(){
-    if (!isAdminAuthenticated){ alert('Admin authentication required!'); return; }
-    if (!confirm('Reset current progress? This clears local progress for this client.')) return;
+window.closeAdmin = function(){ 
+  document.getElementById('adminPanel')?.classList.remove('active'); 
+};
+
+function updateAdminStats(){
+  const stats = getAnalytics();
+  const sAttempts = document.getElementById('statAttempts');
+  const sCompletions = document.getElementById('statCompletions');
+  const sLocked = document.getElementById('statLocked');
+  const sAvg = document.getElementById('statAvgTime');
+  const sBest = document.getElementById('statBestTime');
+  const sHints = document.getElementById('statHints');
+  
+  if (sAttempts) sAttempts.textContent = stats.attempts || 0;
+  if (sCompletions) sCompletions.textContent = stats.completions || 0;
+  if (sLocked) sLocked.textContent = stats.locked || 0;
+  if (sAvg) sAvg.textContent = formatTime(Math.floor(stats.avgTime || 0));
+  if (sBest) sBest.textContent = stats.bestTime ? formatTime(stats.bestTime) : '--';
+  if (sHints) sHints.textContent = stats.hints || 0;
+}
+
+window.resetProgress = function(){
+  if (!isAdminAuthenticated){ 
+    alert('❌ Admin authentication required!'); 
+    return; 
+  }
+  if (!confirm('Reset current progress? This clears local progress for this client.')) return;
+  
+  try {
     safeSetItem('dungeon_progress','');
-    location.reload();
-  };
+    alert('✅ Progress reset! Reloading...');
+    setTimeout(() => location.reload(), 500);
+  } catch(e) {
+    alert('❌ Error resetting progress: ' + e.message);
+  }
+};
 
-  window.unlockUser = function(){
-    if (!isAdminAuthenticated){ alert('Admin authentication required!'); return; }
+window.unlockUser = function(){
+  if (!isAdminAuthenticated){ 
+    alert('❌ Admin authentication required!'); 
+    return; 
+  }
+  
+  try {
     safeSetItem('dungeon_locked','');
     safeSetItem('tab_switch_count','0');
-    alert('Local unlock performed. Use server admin for remote unlock.');
-    location.reload();
-  };
+    alert('✅ Local unlock performed. Reloading...');
+    setTimeout(() => location.reload(), 500);
+  } catch(e) {
+    alert('❌ Error unlocking: ' + e.message);
+  }
+};
 
-  window.clearAllData = function(){
-    if (!isAdminAuthenticated){ alert('Admin authentication required!'); return; }
-    if (!confirm('Clear all analytics stored locally?')) return;
+window.clearAllData = function(){
+  if (!isAdminAuthenticated){ 
+    alert('❌ Admin authentication required!'); 
+    return; 
+  }
+  if (!confirm('Clear all analytics stored locally? This cannot be undone!')) return;
+  
+  try {
     safeSetItem('dungeon_analytics','{}');
     updateAdminStats();
-    alert('Local analytics cleared.');
-  };
+    alert('✅ Local analytics cleared.');
+  } catch(e) {
+    alert('❌ Error clearing data: ' + e.message);
+  }
+};
 
-  window.exportData = function(){
-    if (!isAdminAuthenticated){ alert('Admin authentication required!'); return; }
+window.exportData = function(){
+  if (!isAdminAuthenticated){ 
+    alert('❌ Admin authentication required!'); 
+    return; 
+  }
+  
+  try {
     const analytics = safeGetItem('dungeon_analytics') || '{}';
     const blob = new Blob([analytics], { type:'application/json' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'dungeon-analytics-' + Date.now() + '.json'; a.click();
-  };
-
-  /* Local analytics */
-  function trackEvent(evt, data = {}){
-    try {
-      const key = sanitizeInput(evt);
-      const analytics = JSON.parse(safeGetItem('dungeon_analytics') || '{}');
-      if (!analytics[key]) analytics[key] = [];
-      analytics[key].push({ ...data, timestamp: Date.now() });
-      safeSetItem('dungeon_analytics', JSON.stringify(analytics));
-      if (isConnected && sessionId) trackEventBackend(key, data);
-    } catch(e){ console.error('trackEvent', e); }
+    const a = document.createElement('a'); 
+    a.href = url; 
+    a.download = 'dungeon-analytics-' + Date.now() + '.json'; 
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('✅ Data exported successfully!');
+  } catch(e) {
+    alert('❌ Error exporting data: ' + e.message);
   }
+};
+
+/* Local analytics functions */
+function getAnalytics(){
+  try {
+    const analytics = JSON.parse(safeGetItem('dungeon_analytics') || '{}');
+    const attempts = (analytics.attempt || []).length;
+    const completions = (analytics.complete || []).length;
+    const locked = (analytics.locked || []).length;
+    const hints = (analytics.hint || []).length;
+    const completeTimes = (analytics.complete || []).map(c=>c.time).filter(Boolean);
+    const avgTime = completeTimes.length ? completeTimes.reduce((a,b)=>a+b,0)/completeTimes.length : 0;
+    const bestTime = completeTimes.length ? Math.min(...completeTimes) : 0;
+    return { attempts, completions, locked, hints, avgTime, bestTime };
+  } catch(e){ 
+    console.error('getAnalytics error:', e);
+    return { attempts:0, completions:0, locked:0, hints:0, avgTime:0, bestTime:0 }; 
+  }
+}
 
   function getAnalytics(){
     try {
