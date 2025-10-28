@@ -13,34 +13,6 @@
     padding: 20px;
     min-height: 100vh;
   }
-
- /*
-=====================================================================
-  © 2025 Aakshat. All Rights Reserved.
-  Author: Aakshat
-  Project: Halloween
-  Created: 9/29/25
-  
-  This source code is the intellectual property of Aakshat Hariharan.
-  It may not be copied, modified, distributed, or used 
-  for commercial purposes without explicit written permission 
-  from the author.
-
-  Redistribution of this code or any portion of it, in any form 
-  (including but not limited to compiled binaries, minified files, 
-  or derivative works), without authorization is strictly prohibited.
-
-  By accessing, viewing, or using this code, you agree to respect 
-  the author's intellectual property rights and abide by 
-  all applicable copyright and license terms.
-
-  If you wish to use or contribute to this project, please contact:
- Hariharanaakshat@gmail.com
-
-  Last Updated: 10/27/31
-=====================================================================
-*/
- 
   .container { max-width: 1400px; margin: 0 auto; }
   h1 {
     text-align: center;
@@ -91,6 +63,45 @@
 
   .dashboard { display: none; }
   .dashboard.active { display: block; }
+
+  .game-control {
+    background: rgba(30, 30, 60, 0.8);
+    padding: 25px;
+    border-radius: 12px;
+    border: 2px solid #ff8c00;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+  
+  .game-status {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 10px;
+  }
+  
+  .game-status.started {
+    background: rgba(0, 200, 0, 0.2);
+    color: #00ff00;
+  }
+  
+  .game-status.stopped {
+    background: rgba(200, 0, 0, 0.2);
+    color: #ff4444;
+  }
+
+  .control-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .control-buttons button {
+    flex: 1;
+    min-width: 150px;
+    max-width: 200px;
+  }
 
   .stats-grid {
     display: grid;
@@ -158,10 +169,8 @@
   .badge-easy { background: #00aa00; color: #fff; }
   .badge-medium { background: #ffaa00; color: #000; }
   .badge-hard { background: #ff0000; color: #fff; }
-  .badge-attempt { background: #3498db; color: #fff; }
-  .badge-complete { background: #2ecc71; color: #fff; }
   .badge-locked { background: #e74c3c; color: #fff; }
-  .badge-hint { background: #9b59b6; color: #fff; }
+  .badge-complete { background: #2ecc71; color: #fff; }
 
   .controls {
     display: flex;
@@ -179,6 +188,10 @@
   }
   .btn-secondary {
     background: linear-gradient(135deg, #666, #444) !important;
+    color: #fff !important;
+  }
+  .btn-success {
+    background: linear-gradient(135deg, #00aa00, #008800) !important;
     color: #fff !important;
   }
 
@@ -205,6 +218,34 @@
     min-width: auto;
     width: auto;
   }
+  
+  .notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(30, 30, 60, 0.95);
+    border: 2px solid #ff8c00;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 400px;
+    z-index: 10000;
+    box-shadow: 0 0 20px rgba(255, 140, 0, 0.5);
+  }
+  
+  .notification h3 {
+    color: #ff8c00;
+    margin-bottom: 10px;
+  }
+  
+  .notification-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+  }
+  
+  .notification-buttons button {
+    flex: 1;
+  }
 
   @media (max-width: 768px) {
     .stats-grid {
@@ -212,9 +253,6 @@
     }
     .controls {
       flex-direction: column;
-    }
-    .controls button {
-      width: 100%;
     }
   }
 </style>
@@ -234,14 +272,28 @@
 <div id="dashboard" class="dashboard">
   <div class="container">
     <h1>💀 Locked Dungeon Admin Dashboard 💀</h1>
-    <p class="subtitle">Real-time Analytics & Monitoring</p>
+    <p class="subtitle">Real-time Game Control & Monitoring</p>
+
+    <!-- Game Control Panel -->
+    <div class="game-control">
+      <h2 style="color: #ff8c00; margin-bottom: 20px;">🎮 Game Control</h2>
+      <div id="gameStatus" class="game-status stopped">
+        🔴 Game Not Started
+      </div>
+      <div class="control-buttons">
+        <button id="startGameBtn" onclick="startGame()" class="btn-success">▶️ Start Game</button>
+        <button id="stopGameBtn" onclick="stopGame()" class="btn-danger" disabled>⏹️ Stop Game</button>
+        <button onclick="lockAllPlayers()" class="btn-danger">🔒 Lock All Players</button>
+        <button onclick="unlockAllPlayers()" class="btn-secondary">🔓 Unlock All Players</button>
+      </div>
+    </div>
 
     <div class="controls">
-      <button onclick="refreshData()"> Refresh Data</button>
-      <button onclick="refreshPlayers()"> Refresh Players</button>
-      <button onclick="exportData()" class="btn-secondary"> Export Data</button>
-      <button onclick="clearData()" class="btn-danger"> Clear All Data</button>
-      <button onclick="logout()" class="btn-secondary"> Logout</button>
+      <button onclick="refreshData()">🔄 Refresh Data</button>
+      <button onclick="refreshPlayers()">👥 Refresh Players</button>
+      <button onclick="exportData()" class="btn-secondary">📥 Export Data</button>
+      <button onclick="clearData()" class="btn-danger">🗑️ Clear All Data</button>
+      <button onclick="logout()" class="btn-secondary">🚪 Logout</button>
     </div>
 
     <!-- Stats Overview -->
@@ -270,7 +322,7 @@
 
     <!-- Active Players -->
     <div class="section">
-      <h2> Active Players</h2>
+      <h2>👥 Active Players</h2>
       <table>
         <thead>
           <tr>
@@ -307,7 +359,7 @@
 
     <!-- Recent Activity -->
     <div class="section">
-      <h2> Recent Activity (Last 50 Events)</h2>
+      <h2>📊 Recent Activity (Last 50 Events)</h2>
       <table>
         <thead>
           <tr>
@@ -348,29 +400,197 @@
 <script>
 const SERVER_URL = window.location.origin;
 let adminPassword = '';
+let adminSessionId = null;
+let ws = null;
 
 function login() {
   const password = document.getElementById('adminPassword').value;
   adminPassword = password;
 
-  fetch(`${SERVER_URL}/api/admin/analytics`, {
+  fetch(`${SERVER_URL}/api/admin/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password })
   })
   .then(res => {
-    if (!res.ok) throw new Error('Invalid password');
+    if (!res.ok) {
+      return res.json().then(data => {
+        throw new Error(data.error || 'Login failed');
+      });
+    }
     return res.json();
   })
   .then(data => {
+    adminSessionId = data.sessionId;
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('dashboard').classList.add('active');
-    displayData(data);
+    
+    // Connect WebSocket
+    connectWebSocket();
+    
+    // Load initial data
+    refreshData();
     refreshPlayers();
+    
+    // Update game status
+    updateGameStatus(data.gameStarted);
   })
   .catch(err => {
-    document.getElementById('loginError').textContent = 'Invalid password!';
+    document.getElementById('loginError').textContent = err.message;
   });
+}
+
+function connectWebSocket() {
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = `${protocol}//${window.location.host}`;
+  
+  ws = new WebSocket(wsUrl);
+  
+  ws.onopen = () => {
+    console.log('✅ Admin WebSocket connected');
+    // Notify server that this is admin WebSocket
+    fetch(`${SERVER_URL}/api/admin/set-websocket`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: adminSessionId })
+    });
+  };
+  
+  ws.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    
+    if (data.type === '2fa_request') {
+      show2FARequest(data);
+    }
+    
+    if (data.type === 'player_progress_update') {
+      console.log('Player progress update:', data);
+      refreshPlayers();
+    }
+  };
+  
+  ws.onerror = (error) => {
+    console.error('WebSocket error:', error);
+  };
+  
+  ws.onclose = () => {
+    console.log('WebSocket disconnected');
+  };
+}
+
+function show2FARequest(data) {
+  const notification = document.createElement('div');
+  notification.className = 'notification';
+  notification.innerHTML = `
+    <h3>🔐 Admin Access Request</h3>
+    <p><strong>${data.playerName}</strong> is requesting admin access.</p>
+    <p style="font-size: 0.9rem; color: #aaa; margin-top: 10px;">Session: ${data.sessionId.slice(0, 8)}...</p>
+    <div class="notification-buttons">
+      <button onclick="approve2FA('${data.requestId}', true)" class="btn-success">✅ Approve</button>
+      <button onclick="approve2FA('${data.requestId}', false)" class="btn-danger">❌ Deny</button>
+    </div>
+  `;
+  document.body.appendChild(notification);
+}
+
+function approve2FA(requestId, approved) {
+  fetch(`${SERVER_URL}/api/admin/approve-2fa`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requestId, approved })
+  })
+  .then(() => {
+    // Remove notification
+    const notifications = document.querySelectorAll('.notification');
+    notifications.forEach(n => n.remove());
+    
+    alert(approved ? '✅ Access approved' : '❌ Access denied');
+  })
+  .catch(err => {
+    alert('Error: ' + err.message);
+  });
+}
+
+function startGame() {
+  if (!confirm('Start the game for all players?')) return;
+  
+  fetch(`${SERVER_URL}/api/admin/start-game`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId: adminSessionId })
+  })
+  .then(res => res.json())
+  .then(data => {
+    updateGameStatus(true);
+    alert('🎮 Game started!');
+  })
+  .catch(err => alert('Error: ' + err.message));
+}
+
+function stopGame() {
+  if (!confirm('Stop the game for all players?')) return;
+  
+  fetch(`${SERVER_URL}/api/admin/stop-game`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId: adminSessionId })
+  })
+  .then(res => res.json())
+  .then(data => {
+    updateGameStatus(false);
+    alert('⏹️ Game stopped!');
+  })
+  .catch(err => alert('Error: ' + err.message));
+}
+
+function updateGameStatus(isStarted) {
+  const statusEl = document.getElementById('gameStatus');
+  const startBtn = document.getElementById('startGameBtn');
+  const stopBtn = document.getElementById('stopGameBtn');
+  
+  if (isStarted) {
+    statusEl.textContent = '🟢 Game Running';
+    statusEl.className = 'game-status started';
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+  } else {
+    statusEl.textContent = '🔴 Game Not Started';
+    statusEl.className = 'game-status stopped';
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+  }
+}
+
+function lockAllPlayers() {
+  if (!confirm('Lock ALL players? They will not be able to play.')) return;
+  
+  fetch(`${SERVER_URL}/api/admin/lock-all`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId: adminSessionId })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(`🔒 Locked ${data.lockedCount} players`);
+    refreshPlayers();
+  })
+  .catch(err => alert('Error: ' + err.message));
+}
+
+function unlockAllPlayers() {
+  if (!confirm('Unlock ALL players?')) return;
+  
+  fetch(`${SERVER_URL}/api/admin/unlock-all`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId: adminSessionId })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(`🔓 Unlocked ${data.unlockedCount} players`);
+    refreshPlayers();
+  })
+  .catch(err => alert('Error: ' + err.message));
 }
 
 // Allow Enter key to login
@@ -426,7 +646,7 @@ function displayPlayers(players) {
           <button onclick="lockPlayer('${p.sessionId}', ${!p.locked})" class="${p.locked ? 'btn-secondary' : 'btn-danger'}">
             ${p.locked ? '🔓 Unlock' : '🔒 Lock'}
           </button>
-          <button onclick="resetPlayer('${p.sessionId}')" class="btn-secondary"> Reset</button>
+          <button onclick="resetPlayer('${p.sessionId}')" class="btn-secondary">🔄 Reset</button>
         </td>
       </tr>
     `;
@@ -462,6 +682,11 @@ function resetPlayer(sessionId) {
 }
 
 function displayData(data) {
+  // Update game status
+  if (data.gameState) {
+    updateGameStatus(data.gameState.isStarted);
+  }
+  
   // Update stats
   document.getElementById('statAttempts').textContent = data.totalAttempts;
   document.getElementById('statCompletions').textContent = data.totalCompletions;
@@ -577,6 +802,8 @@ function clearData() {
 
 function logout() {
   adminPassword = '';
+  adminSessionId = null;
+  if (ws) ws.close();
   document.getElementById('dashboard').classList.remove('active');
   document.getElementById('loginScreen').style.display = 'block';
   document.getElementById('adminPassword').value = '';
