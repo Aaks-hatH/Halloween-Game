@@ -399,6 +399,35 @@
     });
   }
 
+  /* Local analytics */
+function trackEvent(evt, data = {}){
+  try {
+    const key = sanitizeInput(evt);
+    const analytics = JSON.parse(safeGetItem('dungeon_analytics') || '{}');
+    if (!analytics[key]) analytics[key] = [];
+    analytics[key].push({ ...data, timestamp: Date.now() });
+    safeSetItem('dungeon_analytics', JSON.stringify(analytics));
+    if (isConnected && sessionId) trackEventBackend(key, data);
+  } catch(e){ console.error('trackEvent', e); }
+}
+
+function getAnalytics(){
+  try {
+    const analytics = JSON.parse(safeGetItem('dungeon_analytics') || '{}');
+    const attempts = (analytics.attempt || []).length;
+    const completions = (analytics.complete || []).length;
+    const locked = (analytics.locked || []).length;
+    const hints = (analytics.hint || []).length;
+    const completeTimes = (analytics.complete || []).map(c=>c.time).filter(Boolean);
+    const avgTime = completeTimes.length ? completeTimes.reduce((a,b)=>a+b,0)/completeTimes.length : 0;
+    const bestTime = completeTimes.length ? Math.min(...completeTimes) : 0;
+    return { attempts, completions, locked, hints, avgTime, bestTime };
+  } catch(e){ 
+    console.error('getAnalytics error:', e);
+    return { attempts:0, completions:0, locked:0, hints:0, avgTime:0, bestTime:0 }; 
+  }
+}
+
   /* Admin UI */
   let isAdminAuthenticated = false;
 
