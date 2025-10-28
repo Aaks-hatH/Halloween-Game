@@ -507,20 +507,30 @@
       return;
     }
 
+    let gameStarted = false;
+let pending2FARequest = false;
+
+
     ws.onopen = () => {
       console.log("✅ Connected to backend");
       isConnected = true;
       reconnectAttempts = 0;
     };
 
-   ws.onmessage = (e) => {
+  ws.onmessage = (e) => {
   try {
     const msg = JSON.parse(e.data);
     console.log('📨 Received:', msg);
     
     if (msg.type === "session_id") {
       sessionId = msg.sessionId;
+      gameStarted = msg.gameStarted;
       console.log('🆔 Session ID:', sessionId);
+      console.log('🎮 Game Started:', gameStarted);
+      
+      if (!gameStarted) {
+        showWaitingScreen();
+      }
       
       if (playerName) {
         sendPlayerName();
@@ -529,13 +539,24 @@
       showSessionId();
     }
     
+    if (msg.type === "game_started") {
+      gameStarted = true;
+      hideWaitingScreen();
+      alert("🎮 The game has started! Good luck!");
+    }
+    
+    if (msg.type === "game_stopped") {
+      gameStarted = false;
+      showWaitingScreen();
+      alert("⏹️ The game has been stopped by admin.");
+    }
+    
     if (msg.type === "lock_status" && msg.locked) {
       alert("🔒 Your session was locked by admin!");
       lockPage();
     }
     
     if (msg.type === "lock_status" && !msg.locked) {
-      // Clear lock BEFORE reload
       localStorage.removeItem('dungeon_locked');
       localStorage.removeItem('tab_switch_count');
       alert("🔓 Unlocked by admin! Reloading...");
@@ -547,26 +568,14 @@
       localStorage.clear();
       location.reload();
     }
+    
+    if (msg.type === "admin_login_response") {
+      handle2FAResponse(msg);
+    }
   } catch (err) {
     console.error('❌ Message error:', err);
   }
 };
-
-    ws.onclose = (event) => {
-      console.log('🔴 Disconnected - Code:', event.code, 'Reason:', event.reason);
-      isConnected = false;
-      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-        console.log(`🔄 Reconnecting... (Attempt ${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})`);
-        setTimeout(connectWebSocket, 2000 * (reconnectAttempts + 1));
-        reconnectAttempts++;
-      }
-    };
-
-    ws.onerror = (error) => {
-      console.error('❌ WebSocket error:', error);
-      console.log('ℹ️ This is normal if server is not running. Game will work without backend.');
-    };
-  }
 
   function sendPlayerName() {
     if (!ws || !isConnected || !sessionId || !playerName) return;
@@ -580,6 +589,73 @@
       console.error('Failed to send player name:', err);
     }
   }
+
+    function showWaitingScreen() {
+  let waitScreen = document.getElementById('waitingScreen');
+  if (!waitScreen) {
+    waitScreen = document.createElement('div');
+    waitScreen.id = 'waitingScreen';
+    waitScreen.className = 'difficulty-screen';
+    waitScreen.innerHTML = `
+      <div class="difficulty-content">
+        <h2 style="margin-bottom: 20px; font-size: 2.5rem;">⏳ Waiting for Admin</h2>
+        <p style="margin-bottom: 30px; font-size: 1.2rem; color: #ffb366;">
+          The game hasn't started yet.<br><br>
+          Please wait for the admin to start the game.
+        </p>
+        <div style="text-align: center;">
+          <div style="display: inline-block; width: 50px; height: 50px; border: 5px solid #ff8c00; border-top: 5px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(waitScreen);
+    
+    // Add spin animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
+function hideWaitingScreen() {
+  const waitScreen = document.getElementById('waitingScreen');
+  if (waitScreen) {
+    waitScreen.remove();
+  }
+}
+
+function handle2FAResponse(msg) {
+  const adminPanel = document.getElementById('adminPanel');
+  
+  if (msg.success) {
+    alert('✅ Admin access granted!');
+    pending2FARequest = false;
+    // Proceed with normal admin login
+    isAdminAuthenticated = true;
+    document.getElementById('adminLogin').style.display = 'none';
+    document.getElementById('adminContent').style.display = 'block';
+    document.getElementById('adminStats').style.display = 'block';
+    document.getElementById('adminControls').style.display = 'block';
+    updateAdminStats();
+    
+    // Notify server that this session is authenticated as admin
+    if (ws && isConnected) {
+      ws.send(JSON.stringify({ type: "admin_authenticated" }));
+    }
+  } else if (msg.reason === "pending_approval") {
+    pending2FARequest = true;
+    alert('⏳ Waiting for admin approval...\n\nThe current admin must approve your access request.');
+  } else {
+    alert('❌ Admin access denied: ' + (msg.reason || 'Unknown error'));
+    pending2FARequest = false;
+  }
+}
+
 
   function showSessionId() {
     if (!sessionId) return;
@@ -896,27 +972,32 @@
   }
 
   function showDifficultyScreen() {
-    const overlay = document.createElement('div');
-    overlay.className = 'difficulty-screen';
-    overlay.innerHTML = `
-      <div class="difficulty-content">
-        <h2 style="margin-bottom: 30px; font-size: 2.5rem;">Choose Your Fate</h2>
-        <button class="difficulty-btn" onclick="selectDifficulty('easy')">
-          🟢 Easy Mode<br>
-          <span style="font-size: 1rem;">Unlimited Lives • No Time Limit • 2 Hints Total</span>
-        </button>
-        <button class="difficulty-btn" onclick="selectDifficulty('medium')">
-          🟡 Medium Mode<br>
-          <span style="font-size: 1rem;">5 Lives • 15 Minutes • 1 Hint Total</span>
-        </button>
-        <button class="difficulty-btn" onclick="selectDifficulty('hard')">
-          🔴 Hard Mode<br>
-          <span style="font-size: 1rem;">3 Lives • 10 Minutes • No Hints</span>
-        </button>
-      </div>
-    `;
-    document.body.appendChild(overlay);
+  if (!gameStarted) {
+    showWaitingScreen();
+    return;
   }
+  
+  const overlay = document.createElement('div');
+  overlay.className = 'difficulty-screen';
+  overlay.innerHTML = `
+    <div class="difficulty-content">
+      <h2 style="margin-bottom: 30px; font-size: 2.5rem;">Choose Your Fate</h2>
+      <button class="difficulty-btn" onclick="selectDifficulty('easy')">
+        🟢 Easy Mode<br>
+        <span style="font-size: 1rem;">Unlimited Lives • No Time Limit • 2 Hints Total</span>
+      </button>
+      <button class="difficulty-btn" onclick="selectDifficulty('medium')">
+        🟡 Medium Mode<br>
+        <span style="font-size: 1rem;">5 Lives • 15 Minutes • 1 Hint Total</span>
+      </button>
+      <button class="difficulty-btn" onclick="selectDifficulty('hard')">
+        🔴 Hard Mode<br>
+        <span style="font-size: 1rem;">3 Lives • 10 Minutes • No Hints</span>
+      </button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
 
   window.selectDifficulty = function(diff) {
     difficulty = sanitizeInput(diff);
@@ -1282,18 +1363,18 @@
   });
 
   window.adminLogin = function() {
-    const pass = sanitizeInput(document.getElementById('adminPassword').value);
-    if (pass === ENCRYPTED_ADMIN_PASS) {
-      isAdminAuthenticated = true;
-      document.getElementById('adminLogin').style.display = 'none';
-      document.getElementById('adminContent').style.display = 'block';
-      document.getElementById('adminStats').style.display = 'block';
-      document.getElementById('adminControls').style.display = 'block';
-      updateAdminStats();
-    } else {
-      alert('Incorrect password!');
-    }
-  };
+  const pass = sanitizeInput(document.getElementById('adminPassword').value);
+  
+  // Send login request through WebSocket for 2FA
+  if (ws && isConnected) {
+    ws.send(JSON.stringify({
+      type: "admin_login_request",
+      password: pass
+    }));
+  } else {
+    alert('Connection to server lost. Please refresh the page.');
+  }
+};
 
   window.closeAdmin = function() {
     document.getElementById('adminPanel').classList.remove('active');
@@ -1516,33 +1597,38 @@
   }
 
   function init() {
-    const wasLocked = checkInitialLock();
-    if (wasLocked) return;
-    
-    const hasProgress = loadProgress();
-    
-    if (!hasProgress && !difficulty) {
-      // Check if player already has a name
-      const savedName = safeGetItem('player_name');
-      if (savedName) {
-        playerName = savedName;
+  const wasLocked = checkInitialLock();
+  if (wasLocked) return;
+  
+  const hasProgress = loadProgress();
+  
+  if (!hasProgress && !difficulty) {
+    const savedName = safeGetItem('player_name');
+    if (savedName) {
+      playerName = savedName;
+      // Check if game is started before showing difficulty
+      if (gameStarted) {
         showDifficultyScreen();
-      } else {
-        showNamePrompt();
       }
-    } else if (difficulty) {
-      // Load saved name if available
-      const savedName = safeGetItem('player_name');
-      if (savedName) {
-        playerName = savedName;
-      }
+      // else waiting screen will show from ws.onmessage
+    } else {
+      showNamePrompt();
+    }
+  } else if (difficulty) {
+    const savedName = safeGetItem('player_name');
+    if (savedName) {
+      playerName = savedName;
+    }
+    
+    // Only render game if started
+    if (gameStarted) {
       renderRiddles();
       updateProgressDisplay();
       updateLivesDisplay();
       startTimer();
     }
   }
-
+}
   init();
 
 })();
