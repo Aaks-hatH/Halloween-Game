@@ -440,12 +440,9 @@ window.adminLogin = function(){
     return;
   }
   
-  const enteredPass = passInput.value.trim(); // Don't sanitize - keep special chars
-  const correctPass = atob('UHVycGxlJk9yYW5nZU1vdXNlXjI='); // Decode directly
-  
-  console.log('Entered:', enteredPass);
-  console.log('Expected:', correctPass);
-  console.log('Match:', enteredPass === correctPass);
+  // DON'T use sanitizeInput - it removes & and other special chars
+  const enteredPass = passInput.value.trim();
+  const correctPass = atob('UHVycGxlJk9yYW5nZU1vdXNlXjI=');
   
   if (enteredPass === correctPass) {
     isAdminAuthenticated = true;
@@ -456,7 +453,7 @@ window.adminLogin = function(){
     updateAdminStats();
     alert('✅ Admin authenticated successfully!');
   } else {
-    alert('❌ Incorrect password!\nYou entered: "' + enteredPass + '"\nExpected: "' + correctPass + '"');
+    alert('❌ Incorrect password!');
   }
 };
 
