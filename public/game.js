@@ -402,9 +402,23 @@
   /* Admin UI */
   let isAdminAuthenticated = false;
 
+
+
 window.adminLogin = function(){
-  const pass = sanitizeInput(document.getElementById('adminPassword').value || '');
-  if (pass === decrypt(ENCRYPTED_ADMIN_PASS)) {
+  const passInput = document.getElementById('adminPassword');
+  if (!passInput) {
+    alert('❌ Password input not found!');
+    return;
+  }
+  
+  const enteredPass = passInput.value.trim(); // Don't sanitize - keep special chars
+  const correctPass = atob('UHVycGxlJk9yYW5nZU1vdXNlXjI='); // Decode directly
+  
+  console.log('Entered:', enteredPass);
+  console.log('Expected:', correctPass);
+  console.log('Match:', enteredPass === correctPass);
+  
+  if (enteredPass === correctPass) {
     isAdminAuthenticated = true;
     document.getElementById('adminLogin').style.display = 'none';
     document.getElementById('adminContent').style.display = 'block';
@@ -413,7 +427,7 @@ window.adminLogin = function(){
     updateAdminStats();
     alert('✅ Admin authenticated successfully!');
   } else {
-    alert('❌ Incorrect password!');
+    alert('❌ Incorrect password!\nYou entered: "' + enteredPass + '"\nExpected: "' + correctPass + '"');
   }
 };
 
