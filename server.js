@@ -38,7 +38,7 @@ let activeAdmin = null;
 let adminWs = null;
 let pendingAdminRequests = new Map(); // Store pending 2FA requests
 
-const ADMIN_PASSWORD = "Password123";
+const ADMIN_PASSWORD = "Purple&OrangeMouse^2";
 
 function generateSessionId() {
   return Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
