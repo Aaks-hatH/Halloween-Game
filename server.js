@@ -15,6 +15,8 @@ app.use(bodyParser.json());
 app.use(express.static('public'));
 
 const server = http.createServer(app);
+
+// IMPORTANT: WebSocket server with noServer option for proper upgrade handling
 const wss = new WebSocketServer({ noServer: true });
 
 // In-memory storage
@@ -26,31 +28,43 @@ let analytics = {
   hints: []
 };
 
-// Game state
-let gameState = {
-  isStarted: false,
-  startedBy: null,
-  startedAt: null
-};
+ /*
+=====================================================================
+  © 2025 Aakshat. All Rights Reserved.
+  Author: Aakshat
+  Project: Halloween
+  Created: 9/29/25
+  
+  This source code is the intellectual property of Aakshat Hariharan.
+  It may not be copied, modified, distributed, or used 
+  for commercial purposes without explicit written permission 
+  from the author.
 
-// Admin session management
-let activeAdmin = null;
-let adminWs = null;
-let pendingAdminRequests = new Map(); // Store pending 2FA requests
+  Redistribution of this code or any portion of it, in any form 
+  (including but not limited to compiled binaries, minified files, 
+  or derivative works), without authorization is strictly prohibited.
 
-const ADMIN_PASSWORD = "Password123";
+  By accessing, viewing, or using this code, you agree to respect 
+  the author's intellectual property rights and abide by 
+  all applicable copyright and license terms.
+
+  If you wish to use or contribute to this project, please contact:
+ Hariharanaakshat@gmail.com
+
+  Last Updated: 10/27/31
+=====================================================================
+*/
+
+const ADMIN_PASSWORD = "^A^A^K^S^H^AT^";
 
 function generateSessionId() {
   return Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
 }
 
-function generateRequestId() {
-  return 'req_' + Math.random().toString(36).substring(2, 15);
-}
-
 // Handle WebSocket upgrade
 server.on('upgrade', (request, socket, head) => {
   console.log('🔄 WebSocket upgrade request received');
+  
   wss.handleUpgrade(request, socket, head, (ws) => {
     wss.emit('connection', ws, request);
   });
@@ -65,22 +79,19 @@ wss.on("connection", (ws, request) => {
     progress: {}, 
     startTime: Date.now(),
     lastActivity: Date.now(),
-    playerName: null,
-    isAdmin: false
+    playerName: null
   });
 
   console.log(`🟢 Player connected: ${sessionId} (Total: ${sessions.size})`);
   
+  // Send session ID immediately
   try {
-    ws.send(JSON.stringify({ 
-      type: "session_id", 
-      sessionId,
-      gameStarted: gameState.isStarted 
-    }));
+    ws.send(JSON.stringify({ type: "session_id", sessionId }));
   } catch (err) {
     console.error('❌ Failed to send session_id:', err);
   }
 
+  // Heartbeat
   ws.isAlive = true;
   ws.on('pong', () => { ws.isAlive = true; });
 
@@ -108,16 +119,6 @@ wss.on("connection", (ws, request) => {
             session.playerName = data.progress.playerName;
           }
           console.log(`📊 Progress update from ${session.playerName || sessionId}`);
-          
-          // Notify admin of progress update
-          if (adminWs && adminWs.readyState === 1) {
-            adminWs.send(JSON.stringify({
-              type: "player_progress_update",
-              sessionId,
-              playerName: session.playerName,
-              progress: session.progress
-            }));
-          }
           break;
         
         case "event":
@@ -130,16 +131,6 @@ wss.on("connection", (ws, request) => {
           });
           console.log(`📈 Event tracked: ${data.event} from ${session.playerName || sessionId}`);
           break;
-        
-        case "admin_login_request":
-          handle2FARequest(sessionId, data.password, ws);
-          break;
-        
-        case "admin_authenticated":
-          // Mark this session as admin
-          session.isAdmin = true;
-          console.log(`🔐 Admin authenticated: ${sessionId}`);
-          break;
       }
     } catch (err) {
       console.error("❌ Message parse error:", err);
@@ -147,12 +138,6 @@ wss.on("connection", (ws, request) => {
   });
 
   ws.on("close", () => {
-    // If this was the admin, clear admin session
-    if (sessionId === activeAdmin) {
-      console.log('🔴 Admin disconnected');
-      activeAdmin = null;
-      adminWs = null;
-    }
     sessions.delete(sessionId);
     console.log(`🔴 Player disconnected: ${sessionId} (Total: ${sessions.size})`);
   });
@@ -162,55 +147,7 @@ wss.on("connection", (ws, request) => {
   });
 });
 
-function handle2FARequest(sessionId, password, ws) {
-  if (password !== ADMIN_PASSWORD) {
-    ws.send(JSON.stringify({
-      type: "admin_login_response",
-      success: false,
-      reason: "Invalid password"
-    }));
-    return;
-  }
-
-  // If there's an active admin, send request to them
-  if (activeAdmin && adminWs && adminWs.readyState === 1) {
-    const requestId = generateRequestId();
-    const session = sessions.get(sessionId);
-    
-    pendingAdminRequests.set(requestId, {
-      sessionId,
-      playerName: session?.playerName || 'Unknown',
-      timestamp: Date.now(),
-      ws
-    });
-
-    // Send request to active admin
-    adminWs.send(JSON.stringify({
-      type: "2fa_request",
-      requestId,
-      sessionId,
-      playerName: session?.playerName || 'Unknown'
-    }));
-
-    // Notify requesting user
-    ws.send(JSON.stringify({
-      type: "admin_login_response",
-      success: false,
-      reason: "pending_approval",
-      message: "Admin approval required. Please wait..."
-    }));
-
-    console.log(`🔐 2FA request from ${session?.playerName || sessionId} - waiting for admin approval`);
-  } else {
-    // No active admin, allow login
-    ws.send(JSON.stringify({
-      type: "admin_login_response",
-      success: true
-    }));
-  }
-}
-
-// Heartbeat
+// Heartbeat to detect broken connections
 const heartbeat = setInterval(() => {
   wss.clients.forEach((ws) => {
     if (ws.isAlive === false) {
@@ -236,191 +173,16 @@ app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-app.post("/api/admin/login", (req, res) => {
-  const { password } = req.body;
-  
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "Invalid password" });
-  }
-
-  // Check if another admin is already logged in
-  if (activeAdmin) {
-    return res.status(403).json({ 
-      error: "Another admin is already logged in",
-      activeAdmin: activeAdmin
-    });
-  }
-
-  const adminSessionId = generateSessionId();
-  activeAdmin = adminSessionId;
-
-  res.json({ 
-    success: true,
-    sessionId: adminSessionId,
-    gameStarted: gameState.isStarted
-  });
-});
-
-app.post("/api/admin/set-websocket", (req, res) => {
-  const { sessionId } = req.body;
-  
-  if (sessionId !== activeAdmin) {
-    return res.status(403).json({ error: "Unauthorized" });
-  }
-
-  const session = sessions.get(sessionId);
-  if (session) {
-    adminWs = session.ws;
-    console.log('🔗 Admin WebSocket connected');
-    res.json({ success: true });
-  } else {
-    res.status(404).json({ error: "Session not found" });
-  }
-});
-
-app.post("/api/admin/approve-2fa", (req, res) => {
-  const { requestId, approved } = req.body;
-  
-  const request = pendingAdminRequests.get(requestId);
-  if (!request) {
-    return res.status(404).json({ error: "Request not found or expired" });
-  }
-
-  if (approved) {
-    // Send approval to requesting user
-    if (request.ws && request.ws.readyState === 1) {
-      request.ws.send(JSON.stringify({
-        type: "admin_login_response",
-        success: true
-      }));
-    }
-    console.log(`✅ 2FA approved for ${request.playerName}`);
-  } else {
-    // Send rejection
-    if (request.ws && request.ws.readyState === 1) {
-      request.ws.send(JSON.stringify({
-        type: "admin_login_response",
-        success: false,
-        reason: "Admin denied access"
-      }));
-    }
-    console.log(`❌ 2FA denied for ${request.playerName}`);
-  }
-
-  pendingAdminRequests.delete(requestId);
-  res.json({ success: true });
-});
-
-app.post("/api/admin/start-game", (req, res) => {
-  const { sessionId } = req.body;
-  
-  if (sessionId !== activeAdmin) {
-    return res.status(403).json({ error: "Only the active admin can start the game" });
-  }
-
-  gameState.isStarted = true;
-  gameState.startedBy = activeAdmin;
-  gameState.startedAt = Date.now();
-
-  // Notify all connected players
-  sessions.forEach((session, sid) => {
-    if (session.ws && session.ws.readyState === 1) {
-      session.ws.send(JSON.stringify({
-        type: "game_started"
-      }));
-    }
-  });
-
-  console.log('🎮 Game started by admin');
-  res.json({ success: true, gameState });
-});
-
-app.post("/api/admin/stop-game", (req, res) => {
-  const { sessionId } = req.body;
-  
-  if (sessionId !== activeAdmin) {
-    return res.status(403).json({ error: "Only the active admin can stop the game" });
-  }
-
-  gameState.isStarted = false;
-  gameState.startedBy = null;
-
-  // Notify all connected players
-  sessions.forEach((session, sid) => {
-    if (session.ws && session.ws.readyState === 1) {
-      session.ws.send(JSON.stringify({
-        type: "game_stopped"
-      }));
-    }
-  });
-
-  console.log('⏹️ Game stopped by admin');
-  res.json({ success: true, gameState });
-});
-
-app.post("/api/admin/lock-all", (req, res) => {
-  const { sessionId } = req.body;
-  
-  if (sessionId !== activeAdmin) {
-    return res.status(403).json({ error: "Only the active admin can lock all players" });
-  }
-
-  let lockedCount = 0;
-  sessions.forEach((session, sid) => {
-    if (!session.isAdmin && session.ws && session.ws.readyState === 1) {
-      session.locked = true;
-      session.ws.send(JSON.stringify({
-        type: "lock_status",
-        locked: true,
-        reason: "Admin locked all players"
-      }));
-      lockedCount++;
-    }
-  });
-
-  console.log(`🔒 Admin locked all players (${lockedCount} players)`);
-  res.json({ success: true, lockedCount });
-});
-
-app.post("/api/admin/unlock-all", (req, res) => {
-  const { sessionId } = req.body;
-  
-  if (sessionId !== activeAdmin) {
-    return res.status(403).json({ error: "Only the active admin can unlock all players" });
-  }
-
-  let unlockedCount = 0;
-  sessions.forEach((session, sid) => {
-    if (!session.isAdmin && session.ws && session.ws.readyState === 1) {
-      session.locked = false;
-      session.ws.send(JSON.stringify({
-        type: "lock_status",
-        locked: false
-      }));
-      unlockedCount++;
-    }
-  });
-
-  console.log(`🔓 Admin unlocked all players (${unlockedCount} players)`);
-  res.json({ success: true, unlockedCount });
-});
-
-app.get("/api/game-state", (req, res) => {
-  res.json(gameState);
-});
-
 app.get("/api/players", (req, res) => {
-  const list = Array.from(sessions.entries())
-    .filter(([id, session]) => !session.isAdmin) // Exclude admin sessions
-    .map(([id, session]) => ({
-      sessionId: id,
-      playerName: session.playerName || null,
-      locked: session.locked,
-      progress: session.progress,
-      startTime: session.startTime,
-      difficulty: session.progress.difficulty,
-      lastActivity: session.lastActivity
-    }));
+  const list = Array.from(sessions.entries()).map(([id, session]) => ({
+    sessionId: id,
+    playerName: session.playerName || null,
+    locked: session.locked,
+    progress: session.progress,
+    startTime: session.startTime,
+    difficulty: session.progress.difficulty,
+    lastActivity: session.lastActivity
+  }));
   res.json(list);
 });
 
@@ -440,11 +202,12 @@ app.post("/api/lock", (req, res) => {
       locked: locked
     });
     
-    if (session.ws.readyState === 1) {
+    if (session.ws.readyState === 1) { // 1 = OPEN
       session.ws.send(message);
-      console.log(`${locked ? "🔒" : "🔓"} Player ${session.playerName || sessionId} ${locked ? 'locked' : 'unlocked'}`);
+      console.log(`${locked ? "🔒" : "🔓"} Player ${session.playerName || sessionId} ${locked ? 'locked' : 'unlocked'} - Message sent`);
       res.json({ success: true });
     } else {
+      console.log(`⚠️ WebSocket not open for ${session.playerName || sessionId}, state: ${session.ws.readyState}`);
       res.status(500).json({ error: "WebSocket not connected" });
     }
   } catch (err) {
@@ -540,8 +303,7 @@ app.post("/api/admin/analytics", (req, res) => {
     bestTimeHard: hardStats.best,
     avgTimeHard: hardStats.avg,
     recentActivity: allEvents,
-    completionTimes: completions.sort((a, b) => b.timestamp - a.timestamp).slice(0, 20),
-    gameState
+    completionTimes: completions.sort((a, b) => b.timestamp - a.timestamp).slice(0, 20)
   });
 });
 
@@ -558,14 +320,12 @@ app.post("/api/admin/sessions", (req, res) => {
     locked: session.locked,
     progress: session.progress,
     startTime: session.startTime,
-    lastActivity: session.lastActivity,
-    isAdmin: session.isAdmin
+    lastActivity: session.lastActivity
   }));
   
   res.json({
     sessions: allSessions,
-    analytics,
-    gameState
+    analytics
   });
 });
 
@@ -592,9 +352,7 @@ app.get("/health", (req, res) => {
     status: "healthy", 
     sessions: sessions.size,
     uptime: process.uptime(),
-    websocketClients: wss.clients.size,
-    gameStarted: gameState.isStarted,
-    activeAdmin: activeAdmin ? true : false
+    websocketClients: wss.clients.size
   });
 });
 
@@ -613,3 +371,4 @@ process.on('SIGTERM', () => {
     process.exit(0);
   });
 });
+
