@@ -15,7 +15,6 @@ app.use(cors({
 }));
 app.use(bodyParser.json());
 
-
 const server = http.createServer(app);
 const wss = new WebSocketServer({ noServer: true });
 
@@ -38,7 +37,7 @@ let gameState = {
 // Admin session management
 let activeAdmin = null;
 let adminWs = null;
-let pendingAdminRequests = new Map(); // Store pending 2FA requests
+let pendingAdminRequests = new Map();
 
 const ADMIN_PASSWORD = "Purple&OrangeMouse^2";
 
@@ -111,7 +110,6 @@ wss.on("connection", (ws, request) => {
           }
           console.log(`📊 Progress update from ${session.playerName || sessionId}`);
           
-          // Notify admin of progress update
           if (adminWs && adminWs.readyState === 1) {
             adminWs.send(JSON.stringify({
               type: "player_progress_update",
@@ -138,7 +136,6 @@ wss.on("connection", (ws, request) => {
           break;
         
         case "admin_authenticated":
-          // Mark this session as admin
           session.isAdmin = true;
           console.log(`🔐 Admin authenticated: ${sessionId}`);
           break;
@@ -149,7 +146,6 @@ wss.on("connection", (ws, request) => {
   });
 
   ws.on("close", () => {
-    // If this was the admin, clear admin session
     if (sessionId === activeAdmin) {
       console.log('🔴 Admin disconnected');
       activeAdmin = null;
@@ -174,7 +170,6 @@ function handle2FARequest(sessionId, password, ws) {
     return;
   }
 
-  // If there's an active admin, send request to them
   if (activeAdmin && adminWs && adminWs.readyState === 1) {
     const requestId = generateRequestId();
     const session = sessions.get(sessionId);
@@ -186,7 +181,6 @@ function handle2FARequest(sessionId, password, ws) {
       ws
     });
 
-    // Send request to active admin
     adminWs.send(JSON.stringify({
       type: "2fa_request",
       requestId,
@@ -194,7 +188,6 @@ function handle2FARequest(sessionId, password, ws) {
       playerName: session?.playerName || 'Unknown'
     }));
 
-    // Notify requesting user
     ws.send(JSON.stringify({
       type: "admin_login_response",
       success: false,
@@ -204,7 +197,6 @@ function handle2FARequest(sessionId, password, ws) {
 
     console.log(`🔐 2FA request from ${session?.playerName || sessionId} - waiting for admin approval`);
   } else {
-    // No active admin, allow login
     ws.send(JSON.stringify({
       type: "admin_login_response",
       success: true
@@ -231,7 +223,7 @@ wss.on('close', () => {
 // Clean up inactive sessions every 5 minutes
 setInterval(() => {
   const now = Date.now();
-  const timeout = 5 * 60 * 1000; // 5 minutes
+  const timeout = 5 * 60 * 1000;
   
   sessions.forEach((session, id) => {
     if (now - session.lastActivity > timeout) {
@@ -245,24 +237,14 @@ setInterval(() => {
 
 // ============ REST API ROUTES ============
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-
+app.post("/api/admin/login", (req, res) => {
+  const { password } = req.body;
   
   if (password !== ADMIN_PASSWORD) {
     return res.status(401).json({ error: "Invalid password" });
   }
 
-  // Check if another admin is already logged in
-  if (activeAdmin) {
-    return res.status(403).json({ 
-      error: "Another admin is already logged in",
-      activeAdmin: activeAdmin
-    });
-  }
-
+  // Allow multiple admins - removed the check
   const adminSessionId = generateSessionId();
   activeAdmin = adminSessionId;
 
@@ -297,33 +279,8 @@ app.post("/api/admin/approve-2fa", (req, res) => {
   if (!request) {
     return res.status(404).json({ error: "Request not found or expired" });
   }
-  
-app.post("/api/admin/force-login", (req, res) => {
-  const { password } = req.body;
-  
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "Invalid password" });
-  }
 
-  // Kick out the current admin
-  if (activeAdmin && adminWs && adminWs.readyState === 1) {
-    adminWs.send(JSON.stringify({
-      type: "force_logout",
-      message: "Another admin has taken over"
-    }));
-  }
-
-  // Clear the old admin session
-  if (activeAdmin) {
-    sessions.delete(activeAdmin);
-  }
-  activeAdmin = null;
-  adminWs = null;
-
-  res.json({ success: true, message: "Previous admin logged out" });
-});
   if (approved) {
-    // Send approval to requesting user
     if (request.ws && request.ws.readyState === 1) {
       request.ws.send(JSON.stringify({
         type: "admin_login_response",
@@ -332,7 +289,6 @@ app.post("/api/admin/force-login", (req, res) => {
     }
     console.log(`✅ 2FA approved for ${request.playerName}`);
   } else {
-    // Send rejection
     if (request.ws && request.ws.readyState === 1) {
       request.ws.send(JSON.stringify({
         type: "admin_login_response",
@@ -347,6 +303,29 @@ app.post("/api/admin/force-login", (req, res) => {
   res.json({ success: true });
 });
 
+app.post("/api/admin/force-login", (req, res) => {
+  const { password } = req.body;
+  
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: "Invalid password" });
+  }
+
+  if (activeAdmin && adminWs && adminWs.readyState === 1) {
+    adminWs.send(JSON.stringify({
+      type: "force_logout",
+      message: "Another admin has taken over"
+    }));
+  }
+
+  if (activeAdmin) {
+    sessions.delete(activeAdmin);
+  }
+  activeAdmin = null;
+  adminWs = null;
+
+  res.json({ success: true, message: "Previous admin logged out" });
+});
+
 app.post("/api/admin/start-game", (req, res) => {
   const { sessionId } = req.body;
   
@@ -358,7 +337,6 @@ app.post("/api/admin/start-game", (req, res) => {
   gameState.startedBy = activeAdmin;
   gameState.startedAt = Date.now();
 
-  // Notify all connected players
   sessions.forEach((session, sid) => {
     if (session.ws && session.ws.readyState === 1) {
       session.ws.send(JSON.stringify({
@@ -381,7 +359,6 @@ app.post("/api/admin/stop-game", (req, res) => {
   gameState.isStarted = false;
   gameState.startedBy = null;
 
-  // Notify all connected players
   sessions.forEach((session, sid) => {
     if (session.ws && session.ws.readyState === 1) {
       session.ws.send(JSON.stringify({
@@ -447,7 +424,7 @@ app.get("/api/game-state", (req, res) => {
 
 app.get("/api/players", (req, res) => {
   const list = Array.from(sessions.entries())
-    .filter(([id, session]) => !session.isAdmin) // Exclude admin sessions
+    .filter(([id, session]) => !session.isAdmin)
     .map(([id, session]) => ({
       sessionId: id,
       playerName: session.playerName || null,
@@ -637,8 +614,6 @@ app.get("/health", (req, res) => {
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
   console.log(`🚀 Backend running on port ${PORT}`);
-  console.log(`📊 Admin panel: http://localhost:${PORT}/admin`);
-  console.log(`🎮 Game: http://localhost:${PORT}/`);
   console.log(`🔌 WebSocket server ready`);
 });
 
