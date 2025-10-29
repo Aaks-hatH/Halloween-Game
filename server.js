@@ -10,7 +10,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://aaks-hath.github.io',  
+    'http://localhost:10000',
+    'http://127.0.0.1:10000'
+  ],
+  credentials: true
+}));
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
