@@ -649,6 +649,14 @@ function getAnalytics(){
     showSessionId();
   }
   
+  // ALWAYS call initUIBindings, even if loading saved progress
+  // Use setTimeout to ensure DOM is ready
+  setTimeout(() => {
+    initUIBindings();
+    console.log('✅ Game initialized');
+  }, 100);
+}
+  
   // CRITICAL: Call this to attach event listeners
   initUIBindings();
   
@@ -667,25 +675,56 @@ function getAnalytics(){
     showDifficultyScreen();
   };
 
-  window.selectDifficulty = window.selectDifficulty || function(diff){
-    difficulty = sanitizeInput(diff);
-    if (!['easy','medium','hard'].includes(difficulty)) { alert('Invalid difficulty'); return; }
-    riddles = riddlesByDifficulty[difficulty];
-    switch(difficulty){
-      case 'easy': maxLives=999; timeLimit=0; totalHints=2; hintsRemaining=2; break;
-      case 'medium': maxLives=5; timeLimit=15*60; totalHints=1; hintsRemaining=1; break;
-      case 'hard': maxLives=3; timeLimit=10*60; totalHints=0; hintsRemaining=0; break;
-    }
-    lives = maxLives;
-    document.querySelector('.difficulty-screen')?.remove();
-    trackEvent('attempt', { difficulty });
-    trackEventBackend('attempt', { difficulty });
-    saveProgress();
-    renderRiddles();
-    updateProgressDisplay();
-    updateLivesDisplay();
-    startTimer();
-  };
+  window.selectDifficulty = function(diff){
+  difficulty = diff;
+  if (!['easy','medium','hard'].includes(difficulty)) { 
+    alert('Invalid difficulty'); 
+    return; 
+  }
+  
+  riddles = riddlesByDifficulty[difficulty];
+  
+  switch(difficulty){
+    case 'easy': 
+      maxLives = 999; 
+      timeLimit = 0; 
+      totalHints = 2; 
+      hintsRemaining = 2; 
+      console.log('✅ Easy mode: Unlimited lives, 2 hints');
+      break;
+    case 'medium': 
+      maxLives = 5; 
+      timeLimit = 15*60; 
+      totalHints = 1; 
+      hintsRemaining = 1; 
+      console.log('✅ Medium mode: 5 lives, 15min timer, 1 hint');
+      break;
+    case 'hard': 
+      maxLives = 3; 
+      timeLimit = 10*60; 
+      totalHints = 0; 
+      hintsRemaining = 0; 
+      console.log('✅ Hard mode: 3 lives, 10min timer, 0 hints');
+      break;
+  }
+  
+  lives = maxLives;
+  
+  document.querySelector('.difficulty-screen')?.remove();
+  trackEvent('attempt', { difficulty });
+  trackEventBackend('attempt', { difficulty });
+  saveProgress();
+  renderRiddles();
+  updateProgressDisplay();
+  updateLivesDisplay();
+  startTimer();
+  
+  // CRITICAL: Attach event listeners AFTER rendering riddles
+  setTimeout(() => {
+    initUIBindings();
+    console.log('✅ UI bindings attached after difficulty selection');
+  }, 100);
+};
 
   function showNamePrompt(){
     const savedName = safeGetItem('player_name');
