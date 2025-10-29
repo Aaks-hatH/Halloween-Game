@@ -226,6 +226,21 @@ wss.on('close', () => {
   clearInterval(heartbeat);
 });
 
+// Clean up inactive sessions every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  const timeout = 5 * 60 * 1000; // 5 minutes
+  
+  sessions.forEach((session, id) => {
+    if (now - session.lastActivity > timeout) {
+      console.log(`🧹 Cleaning up inactive session: ${session.playerName || id}`);
+      sessions.delete(id);
+    }
+  });
+  
+  console.log(`📊 Active sessions: ${sessions.size}`);
+}, 5 * 60 * 1000);
+
 // ============ REST API ROUTES ============
 
 app.get("/", (req, res) => {
