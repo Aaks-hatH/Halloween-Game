@@ -3,11 +3,6 @@ import http from "http";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { WebSocketServer } from "ws";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors({
@@ -19,7 +14,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(bodyParser.json());
-app.use(express.static('public'));
+
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ noServer: true });
@@ -254,12 +249,7 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get("/admin", (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
 
-app.post("/api/admin/login", (req, res) => {
-  const { password } = req.body;
   
   if (password !== ADMIN_PASSWORD) {
     return res.status(401).json({ error: "Invalid password" });
