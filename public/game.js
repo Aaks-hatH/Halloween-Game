@@ -332,7 +332,7 @@
     const input = document.getElementById('codeInput');
     if (!btn || !input) return;
     btn.addEventListener('click', ()=>{
-      if (isLocked) { alert('Page is locked due to excessive tab switching.'); return; }
+      if (isLocked) { alert('Congrats'); return; }
       let entered = (input.value || '').trim().replace(/\s+/g, '').toUpperCase();
       entered = entered.replace(/[\u200B\u200C\u200D\uFEFF\u2060]/g,'');
       const res = document.getElementById('result');
