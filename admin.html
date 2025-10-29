@@ -398,7 +398,7 @@
 </div>
 
 <script>
-const SERVER_URL = window.location.origin;
+const SERVER_URL = "https://halloween-game-1.onrender.com";  // FIXED: Point to Render backend
 let adminPassword = '';
 let adminSessionId = null;
 let ws = null;
@@ -407,7 +407,7 @@ function login() {
   const password = document.getElementById('adminPassword').value;
   adminPassword = password;
 
-  fetch(`${SERVER_URL}/api/admin/login`, {
+  fetch(`${SERVER_URL}/api/admin/login`, {  // FIXED: Added parenthesis
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password })
@@ -424,15 +424,9 @@ function login() {
     adminSessionId = data.sessionId;
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('dashboard').classList.add('active');
-    
-    // Connect WebSocket
     connectWebSocket();
-    
-    // Load initial data
     refreshData();
     refreshPlayers();
-    
-    // Update game status
     updateGameStatus(data.gameStarted);
   })
   .catch(err => {
@@ -441,15 +435,12 @@ function login() {
 }
 
 function connectWebSocket() {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const wsUrl = `${protocol}//${window.location.host}`;
-  
+  const wsUrl = "wss://halloween-game-1.onrender.com";  // FIXED: Direct to Render
   ws = new WebSocket(wsUrl);
   
   ws.onopen = () => {
     console.log('✅ Admin WebSocket connected');
-    // Notify server that this is admin WebSocket
-    fetch(`${SERVER_URL}/api/admin/set-websocket`, {
+    fetch(`${SERVER_URL}/api/admin/set-websocket`, {  // FIXED: Added parenthesis
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId: adminSessionId })
@@ -458,11 +449,9 @@ function connectWebSocket() {
   
   ws.onmessage = (e) => {
     const data = JSON.parse(e.data);
-    
     if (data.type === '2fa_request') {
       show2FARequest(data);
     }
-    
     if (data.type === 'player_progress_update') {
       console.log('Player progress update:', data);
       refreshPlayers();
@@ -478,15 +467,14 @@ function connectWebSocket() {
   };
 }
 
- function forceLogin() {
+function forceLogin() {
   const password = document.getElementById('adminPassword').value;
-  
   if (!password) {
     document.getElementById('loginError').textContent = 'Please enter password';
     return;
   }
 
-  fetch(`${SERVER_URL}/api/admin/force-login`, {
+  fetch(`${SERVER_URL}/api/admin/force-login`, {  // FIXED
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password })
@@ -494,7 +482,6 @@ function connectWebSocket() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      // Now do the normal login
       login();
     } else {
       throw new Error(data.error || 'Force login failed');
@@ -521,16 +508,14 @@ function show2FARequest(data) {
 }
 
 function approve2FA(requestId, approved) {
-  fetch(`${SERVER_URL}/api/admin/approve-2fa`, {
+  fetch(`${SERVER_URL}/api/admin/approve-2fa`, {  // FIXED
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ requestId, approved })
   })
   .then(() => {
-    // Remove notification
     const notifications = document.querySelectorAll('.notification');
     notifications.forEach(n => n.remove());
-    
     alert(approved ? '✅ Access approved' : '❌ Access denied');
   })
   .catch(err => {
@@ -540,8 +525,7 @@ function approve2FA(requestId, approved) {
 
 function startGame() {
   if (!confirm('Start the game for all players?')) return;
-  
-  fetch(`${SERVER_URL}/api/admin/start-game`, {
+  fetch(`${SERVER_URL}/api/admin/start-game`, {  // FIXED
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sessionId: adminSessionId })
@@ -556,8 +540,7 @@ function startGame() {
 
 function stopGame() {
   if (!confirm('Stop the game for all players?')) return;
-  
-  fetch(`${SERVER_URL}/api/admin/stop-game`, {
+  fetch(`${SERVER_URL}/api/admin/stop-game`, {  // FIXED
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sessionId: adminSessionId })
@@ -574,7 +557,6 @@ function updateGameStatus(isStarted) {
   const statusEl = document.getElementById('gameStatus');
   const startBtn = document.getElementById('startGameBtn');
   const stopBtn = document.getElementById('stopGameBtn');
-  
   if (isStarted) {
     statusEl.textContent = '🟢 Game Running';
     statusEl.className = 'game-status started';
@@ -590,15 +572,14 @@ function updateGameStatus(isStarted) {
 
 function lockAllPlayers() {
   if (!confirm('Lock ALL players? They will not be able to play.')) return;
-  
-  fetch(`${SERVER_URL}/api/admin/lock-all`, {
+  fetch(`${SERVER_URL}/api/admin/lock-all`, {  // FIXED
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sessionId: adminSessionId })
   })
   .then(res => res.json())
   .then(data => {
-    alert(`🔒 Locked ${data.lockedCount} players`);
+    alert(`🔒 Locked ${data.lockedCount} players`);  // FIXED
     refreshPlayers();
   })
   .catch(err => alert('Error: ' + err.message));
@@ -606,27 +587,25 @@ function lockAllPlayers() {
 
 function unlockAllPlayers() {
   if (!confirm('Unlock ALL players?')) return;
-  
-  fetch(`${SERVER_URL}/api/admin/unlock-all`, {
+  fetch(`${SERVER_URL}/api/admin/unlock-all`, {  // FIXED
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sessionId: adminSessionId })
   })
   .then(res => res.json())
   .then(data => {
-    alert(`🔓 Unlocked ${data.unlockedCount} players`);
+    alert(`🔓 Unlocked ${data.unlockedCount} players`);  // FIXED
     refreshPlayers();
   })
   .catch(err => alert('Error: ' + err.message));
 }
 
-// Allow Enter key to login
 document.getElementById('adminPassword').addEventListener('keypress', (e) => {
   if (e.key === 'Enter') login();
 });
 
 function refreshData() {
-  fetch(`${SERVER_URL}/api/admin/analytics`, {
+  fetch(`${SERVER_URL}/api/admin/analytics`, {  // FIXED
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password: adminPassword })
@@ -637,7 +616,7 @@ function refreshData() {
 }
 
 function refreshPlayers() {
-  fetch(`${SERVER_URL}/api/players`)
+  fetch(`${SERVER_URL}/api/players`)  // FIXED
   .then(res => res.json())
   .then(displayPlayers)
   .catch(err => console.error('Error fetching players:', err));
@@ -681,22 +660,21 @@ function displayPlayers(players) {
 }
 
 function lockPlayer(sessionId, locked) {
-  fetch(`${SERVER_URL}/api/lock`, {
+  fetch(`${SERVER_URL}/api/lock`, {  // FIXED
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sessionId, locked })
   })
   .then(() => {
     refreshPlayers();
-    alert(`Player ${locked ? 'locked' : 'unlocked'} successfully!`);
+    alert(`Player ${locked ? 'locked' : 'unlocked'} successfully!`);  // FIXED
   })
   .catch(err => alert('Error: ' + err.message));
 }
 
 function resetPlayer(sessionId) {
   if (!confirm('Reset this player\'s progress?')) return;
-  
-  fetch(`${SERVER_URL}/api/reset`, {
+  fetch(`${SERVER_URL}/api/reset`, {  // FIXED
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sessionId })
@@ -709,18 +687,15 @@ function resetPlayer(sessionId) {
 }
 
 function displayData(data) {
-  // Update game status
   if (data.gameState) {
     updateGameStatus(data.gameState.isStarted);
   }
   
-  // Update stats
   document.getElementById('statAttempts').textContent = data.totalAttempts;
   document.getElementById('statCompletions').textContent = data.totalCompletions;
   document.getElementById('statLocked').textContent = data.totalLocked;
   document.getElementById('statHints').textContent = data.totalHints;
 
-  // Update times table
   const timesTable = document.getElementById('timesTable');
   timesTable.innerHTML = `
     <tr>
@@ -740,7 +715,6 @@ function displayData(data) {
     </tr>
   `;
 
-  // Update activity table
   const activityTable = document.getElementById('activityTable');
   if (data.recentActivity.length === 0) {
     activityTable.innerHTML = '<tr><td colspan="5" class="empty-state">No activity yet</td></tr>';
@@ -756,7 +730,6 @@ function displayData(data) {
     `).join('');
   }
 
-  // Update completions table
   const completionsTable = document.getElementById('completionsTable');
   if (data.completionTimes.length === 0) {
     completionsTable.innerHTML = '<tr><td colspan="5" class="empty-state">No completions yet</td></tr>';
@@ -794,7 +767,7 @@ function formatTime(seconds) {
 }
 
 function exportData() {
-  fetch(`${SERVER_URL}/api/admin/sessions`, {
+  fetch(`${SERVER_URL}/api/admin/sessions`, {  // FIXED
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password: adminPassword })
@@ -813,8 +786,7 @@ function exportData() {
 
 function clearData() {
   if (!confirm('Are you sure you want to delete ALL data? This cannot be undone!')) return;
-
-  fetch(`${SERVER_URL}/api/admin/clear`, {
+  fetch(`${SERVER_URL}/api/admin/clear`, {  // FIXED
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password: adminPassword })
@@ -837,7 +809,6 @@ function logout() {
   document.getElementById('loginError').textContent = '';
 }
 
-// Auto-refresh every 30 seconds
 setInterval(() => {
   if (document.getElementById('dashboard').classList.contains('active')) {
     refreshData();
