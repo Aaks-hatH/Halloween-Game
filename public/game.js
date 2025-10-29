@@ -601,30 +601,59 @@ function getAnalytics(){
   function attachHintButton(){ /* defined above, but ensure present */ }
 
   function initUIBindings(){
-    attachUnlock();
-    attachHintButton();
-    document.getElementById('adminToggle')?.addEventListener('click', ()=>{ document.getElementById('adminPanel')?.classList.toggle('active'); });
-    const nameInput = document.getElementById('nameInput');
-    if (nameInput) nameInput.addEventListener('keypress', (e)=>{ if (e.key === 'Enter') window.submitName?.(); });
+  console.log('🔧 Initializing UI bindings...');
+  attachUnlock();
+  attachHintButton();
+  
+  const adminToggle = document.getElementById('adminToggle');
+  if (adminToggle) {
+    adminToggle.addEventListener('click', ()=>{ 
+      document.getElementById('adminPanel')?.classList.toggle('active'); 
+    });
   }
+  
+  const nameInput = document.getElementById('nameInput');
+  if (nameInput) {
+    nameInput.addEventListener('keypress', (e)=>{ 
+      if (e.key === 'Enter') window.submitName?.(); 
+    });
+  }
+  
+  console.log('✅ UI bindings complete');
+}
 
   function init(){
-    try { connectWebSocket(); } catch(e){ console.warn('WS init failed', e); }
-    const savedName = safeGetItem('player_name'); if (savedName) playerName = savedName;
-    if (checkInitialLock()) return;
-    const loaded = loadProgress();
-    if (!loaded) {
-      if (!playerName) { showNamePrompt(); }
-      else { showSessionId(); showDifficultyScreen(); }
-    } else {
-      riddles = riddlesByDifficulty[difficulty];
-      renderRiddles();
-      updateProgressDisplay();
-      updateLivesDisplay();
-      if (startTime && timeLimit > 0) startTimer();
+  console.log('🎮 Initializing game...');
+  
+  try { connectWebSocket(); } catch(e){ console.warn('WS init failed', e); }
+  
+  const savedName = safeGetItem('player_name'); 
+  if (savedName) playerName = savedName;
+  
+  if (checkInitialLock()) return;
+  
+  const loaded = loadProgress();
+  if (!loaded) {
+    if (!playerName) { 
+      showNamePrompt(); 
+    } else { 
+      showSessionId(); 
+      showDifficultyScreen(); 
     }
-    initUIBindings();
+  } else {
+    riddles = riddlesByDifficulty[difficulty];
+    renderRiddles();
+    updateProgressDisplay();
+    updateLivesDisplay();
+    if (startTime && timeLimit > 0) startTimer();
+    showSessionId();
   }
+  
+  // CRITICAL: Call this to attach event listeners
+  initUIBindings();
+  
+  console.log('✅ Game initialized');
+}
 
   // Provide missing functions expected by index.html
   window.submitName = window.submitName || function(){
