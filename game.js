@@ -73,17 +73,7 @@
 
   ws.onerror = (err) => console.error('WS error', err);
 }
-    ws.onclose = () => {
-      isConnected = false;
-      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-        reconnectAttempts++;
-        setTimeout(connectWebSocket, 2000 * reconnectAttempts);
-      }
-    };
-
-    ws.onerror = (err) => console.error('WS error', err);
-  }
-
+  
   function sendRaw(obj){
     if (!ws || ws.readyState !== WebSocket.OPEN) return;
     try { ws.send(JSON.stringify(obj)); } catch(e){ console.error('WS send failed', e); }
