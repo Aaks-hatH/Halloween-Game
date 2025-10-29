@@ -837,4 +837,50 @@ function getAnalytics(){
     }
   };
 
+// Expose fallback admin functions if not defined
+  window.resetProgress = window.resetProgress || function(){ if (confirm('Reset progress (local)?')) { safeSetItem('dungeon_progress',''); location.reload(); } };
+  window.unlockUser   = window.unlockUser   || function(){ safeSetItem('dungeon_locked',''); safeSetItem('tab_switch_count','0'); location.reload(); };
+  window.clearAllData = window.clearAllData || function(){ if (confirm('Clear local analytics?')){ safeSetItem('dungeon_analytics','{}'); updateAdminStats(); alert('Cleared.'); } };
+  window.exportData   = window.exportData   || function(){ const analytics = safeGetItem('dungeon_analytics')||'{}'; const blob=new Blob([analytics],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='dungeon-analytics-'+Date.now()+'.json'; a.click(); };
+
+  // Hint button function
+  window.manualHintClick = function(){
+    console.log('🔍 Hint button clicked!');
+    const hb = document.getElementById('hintBox');
+    
+    if (typeof hintsRemaining === 'undefined' || hintsRemaining <= 0) { 
+      if (hb) {
+        hb.style.display='block'; 
+        hb.innerHTML = '<p class="no-select" style="font-family:Creepster, cursive; font-size:1.2rem;">⛔ No hints remaining!</p>';
+      }
+      return; 
+    }
+    
+    const rn = prompt('Which riddle do you want a hint for? (1-5)');
+    if (!rn) { 
+      if (hb) { hb.style.display='none'; hb.innerHTML=''; }
+      return; 
+    }
+    
+    const n = parseInt(rn);
+    const gameHints = {
+      "1":"Think of a chilling presence that has no physical body.",
+      "2":"A place people visit on Halloween where scary things are displayed, two words.",
+      "3":"A round letter that is also a shape.",
+      "4":"A word for the category a walking dead creature is classified as.",
+      "5":"A source of flickering illumination that keeps the dark away."
+    };
+    
+    if (!n || n < 1 || n > 5 || !gameHints[n]) { 
+      if (hb) {
+        hb.style.display='block'; 
+        hb.innerHTML = '<p class="no-select" style="font-family:Creepster, cursive; font-size:1.2rem;">That riddle doesn\'t exist – try 1 to 5.</p>';
+      }
+      return; 
+    }
+    
+    if (hb) {
+      hb.style.display='block';
+      hb.innerHTML = '<p class="no-select" style="font-family:Creepster, cursive; font-size:1.2rem;">💡 Hint for Riddle ' + n + ': ' +
+
 })(); // <-- This closing should already be there
