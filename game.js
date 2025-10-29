@@ -21,32 +21,58 @@
   function safeGetItem(k){ try { return localStorage.getItem(sanitizeInput(k)); } catch(e){ return null; } }
 
   function connectWebSocket(){
-    try { ws = new WebSocket(WS_URL); } catch(e){ console.error('WS create failed', e); return; }
-
-    ws.onopen = () => {
-      isConnected = true;
-      reconnectAttempts = 0;
-      if (sessionId && playerName) sendPlayerName();
-    };
-
-    ws.onmessage = (ev) => {
-      try {
-        const msg = JSON.parse(ev.data);
-        if (msg.type === 'session_id') {
-          sessionId = msg.sessionId;
-          showSessionId();
-          if (playerName) sendPlayerName();
-        } else if (msg.type === 'lock_status') {
-          if (msg.locked) { alert('🔒 Your session was locked by admin.'); lockPage(); }
-          else { safeSetItem('dungeon_locked',''); safeSetItem('tab_switch_count','0'); alert('🔓 Unlocked by admin. Reloading...'); setTimeout(()=>location.reload(),500); }
-        } else if (msg.type === 'reset') {
-          alert('🔄 Progress reset by admin. Reloading...');
-          localStorage.removeItem('dungeon_progress');
-          setTimeout(()=>location.reload(),300);
+  try { ws = new WebSocket(WS_URL); } catch(e){ console.error('WS create failed', e); return; }
+  
+  ws.onopen = () => {
+    isConnected = true;
+    reconnectAttempts = 0;
+    if (sessionId && playerName) sendPlayerName();
+  };
+  
+  ws.onmessage = (ev) => {
+    try {
+      const msg = JSON.parse(ev.data);
+      if (msg.type === 'session_id') {
+        sessionId = msg.sessionId;
+        showSessionId();
+        if (playerName) sendPlayerName();
+      } else if (msg.type === 'lock_status') {
+        if (msg.locked) { 
+          alert('🔒 Your session was locked by admin.'); 
+          lockPage(); 
+        } else { 
+          safeSetItem('dungeon_locked',''); 
+          safeSetItem('tab_switch_count','0'); 
+          alert('🔓 Unlocked by admin. Reloading...'); 
+          setTimeout(()=>location.reload(),500); 
         }
-      } catch(e){ console.error('WS msg parse', e); }
-    };
+      } else if (msg.type === 'reset') {
+        alert('🔄 Progress reset by admin. Reloading...');
+        localStorage.removeItem('dungeon_progress');
+        setTimeout(()=>location.reload(),300);
+      } else if (msg.type === 'game_started') {
+        alert('🎮 The game has started! Good luck!');
+        removeGameNotStartedOverlay();
+        location.reload();
+      } else if (msg.type === 'game_stopped') {
+        alert('⏹️ The game has been stopped by the administrator.');
+        showGameNotStarted();
+      }
+    } catch(e){ 
+      console.error('WS msg parse', e); 
+    }
+  };
 
+  ws.onclose = () => {
+    isConnected = false;
+    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+      reconnectAttempts++;
+      setTimeout(connectWebSocket, 2000 * reconnectAttempts);
+    }
+  };
+
+  ws.onerror = (err) => console.error('WS error', err);
+}
     ws.onclose = () => {
       isConnected = false;
       if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
@@ -510,29 +536,76 @@
     console.log('✅ UI bindings complete');
   }
 
+
+  function checkGameState() {
+  // Check if game is started
+  fetch('https://halloween-game-1.onrender.com/api/game-state')
+    .then(res => res.json())
+    .then(state => {
+      if (!state.isStarted) {
+        // Game not started - show blocked screen
+        showGameNotStarted();
+      }
+    })
+    .catch(err => {
+      console.warn('Could not check game state:', err);
+      // If we can't check, allow play (offline mode)
+    });
+}
+
+function showGameNotStarted() {
+  isLocked = true;
+  stopTimer();
+  const overlay = document.createElement('div');
+  overlay.id = 'gameNotStartedOverlay';
+  overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(139,0,0,0.98);display:flex;align-items:center;justify-content:center;z-index:10000;";
+  const box = document.createElement('div');
+  box.style.cssText = "background:linear-gradient(135deg, rgba(0,0,0,0.95), rgba(70,0,0,0.95)); border:4px solid #ff8c00; border-radius:20px; padding:50px; max-width:600px; text-align:center; box-shadow:0 0 80px rgba(255,140,0,0.8);";
+  box.innerHTML = `<h1 style="color:#ff8c00;font-family:Creepster, cursive;">🎮 Game Not Started 🎮</h1><p style="color:#ffaa66;font-family:Creepster, cursive;margin-top:20px;">The game administrator has not started the game yet.<br><br>Please wait for the game to begin!</p>`;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  document.querySelectorAll('input, button').forEach(el => { if (el.id !== 'adminToggle') el.disabled = true; });
+}
+
+function removeGameNotStartedOverlay() {
+  const overlay = document.getElementById('gameNotStartedOverlay');
+  if (overlay) overlay.remove();
+  isLocked = false;
+  document.querySelectorAll('input, button').forEach(el => el.disabled = false);
+}
+
+  
   function init(){
-    console.log('🎮 Initializing game...');
-    try { connectWebSocket(); } catch(e){ console.warn('WS init failed', e); }
-    const savedName = safeGetItem('player_name'); 
-    if (savedName) playerName = savedName;
-    if (checkInitialLock()) return;
-    const loaded = loadProgress();
-    if (!loaded) {
-      if (!playerName) { showNamePrompt(); }
-      else { showSessionId(); showDifficultyScreen(); }
-    } else {
-      riddles = riddlesByDifficulty[difficulty];
-      renderRiddles();
-      updateProgressDisplay();
-      updateLivesDisplay();
-      if (startTime && timeLimit > 0) startTimer();
-      showSessionId();
-    }
-    setTimeout(() => {
-      initUIBindings();
-      console.log('✅ Game initialized');
-    }, 100);
+  console.log('🎮 Initializing game...');
+  
+  try { connectWebSocket(); } catch(e){ console.warn('WS init failed', e); }
+  
+  const savedName = safeGetItem('player_name'); 
+  if (savedName) playerName = savedName;
+  
+  if (checkInitialLock()) return;
+  
+  // CHECK GAME STATE FIRST
+  checkGameState();
+  
+  const loaded = loadProgress();
+  if (!loaded) {
+    if (!playerName) { showNamePrompt(); }
+    else { showSessionId(); showDifficultyScreen(); }
+  } else {
+    riddles = riddlesByDifficulty[difficulty];
+    renderRiddles();
+    updateProgressDisplay();
+    updateLivesDisplay();
+    if (startTime && timeLimit > 0) startTimer();
+    showSessionId();
   }
+  
+  setTimeout(() => {
+    initUIBindings();
+    console.log('✅ Game initialized');
+  }, 100);
+}
 
   window.submitName = function(){
     const input = document.getElementById('nameInput');
