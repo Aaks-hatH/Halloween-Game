@@ -478,6 +478,33 @@ function connectWebSocket() {
   };
 }
 
+ function forceLogin() {
+  const password = document.getElementById('adminPassword').value;
+  
+  if (!password) {
+    document.getElementById('loginError').textContent = 'Please enter password';
+    return;
+  }
+
+  fetch(`${SERVER_URL}/api/admin/force-login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      // Now do the normal login
+      login();
+    } else {
+      throw new Error(data.error || 'Force login failed');
+    }
+  })
+  .catch(err => {
+    document.getElementById('loginError').textContent = err.message;
+  });
+}
+
 function show2FARequest(data) {
   const notification = document.createElement('div');
   notification.className = 'notification';
