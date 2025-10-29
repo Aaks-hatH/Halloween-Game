@@ -88,16 +88,16 @@
   function decryptAns(b64){ try { return atob(b64); } catch(e) { return b64; } }
 
   const riddlesByDifficulty = {
-    easy: [
-      {id:1, title:'Riddle 1', text:"I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?", answer: decryptAns('Rw==')}, // G
-      {id:2, title:'Riddle 2', text:"I am full of ghosts, cobwebs, and fright,\nPeople visit me on Halloween night.\nDark and spooky is my style,\nWhat am I?", answer: decryptAns('SA==')}, // H
-      {id:3, title:'Riddle 3', text:"Round and hollow, dark my core,\nI open wide but have no door.\nWithout me, faces cannot see\nWhat letter am I meant to be?\n(Hint: The letter is a Shape)", answer: decryptAns('Tw==')}, // O
-      {id:4, title:'Riddle 4', text:"Neither living nor quite dead,\nI rise again when moonlight's shed.\nI shamble slow, with vacant hue\nGuess my name.", answer: decryptAns('VQ==')}, // U
-      {id:5, title:'Riddle 5', text:"I live inside a haunted flame,\nWithout me, dark would rule the game.\nI flicker soft, I guard your soul\nWhat am I, with shining role?", answer: decryptAns('TA==')} // L
-    ],
-    medium: [],
-    hard: []
-  };
+  easy: [
+    {id:1, title:'Riddle 1', text:"I have no body, but I can appear,\nI whisper in your ear, but vanish near.\n\nYou'll feel my chill though I am air,\nWhat am I, haunting everywhere?", answer: 'GHOST'}, 
+    {id:2, title:'Riddle 2', text:"I am full of ghosts, cobwebs, and fright,\nPeople visit me on Halloween night.\nDark and spooky is my style,\nWhat am I?", answer: 'HAUNTEDHOUSE'}, 
+    {id:3, title:'Riddle 3', text:"Round and hollow, dark my core,\nI open wide but have no door.\nWithout me, faces cannot see\nWhat letter am I meant to be?\n(Hint: The letter is a Shape)", answer: 'O'}, 
+    {id:4, title:'Riddle 4', text:"Neither living nor quite dead,\nI rise again when moonlight's shed.\nI shamble slow, with vacant hue\nGuess my name.", answer: 'UNDEAD'}, 
+    {id:5, title:'Riddle 5', text:"I live inside a haunted flame,\nWithout me, dark would rule the game.\nI flicker soft, I guard your soul\nWhat am I, with shining role?", answer: 'LIGHT'}
+  ],
+  medium: [],
+  hard: []
+};
   // duplicate same riddles across difficulties per request
   riddlesByDifficulty.medium = JSON.parse(JSON.stringify(riddlesByDifficulty.easy));
   riddlesByDifficulty.hard = JSON.parse(JSON.stringify(riddlesByDifficulty.easy));
