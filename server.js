@@ -300,7 +300,31 @@ app.post("/api/admin/approve-2fa", (req, res) => {
   if (!request) {
     return res.status(404).json({ error: "Request not found or expired" });
   }
+  
+app.post("/api/admin/force-login", (req, res) => {
+  const { password } = req.body;
+  
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: "Invalid password" });
+  }
 
+  // Kick out the current admin
+  if (activeAdmin && adminWs && adminWs.readyState === 1) {
+    adminWs.send(JSON.stringify({
+      type: "force_logout",
+      message: "Another admin has taken over"
+    }));
+  }
+
+  // Clear the old admin session
+  if (activeAdmin) {
+    sessions.delete(activeAdmin);
+  }
+  activeAdmin = null;
+  adminWs = null;
+
+  res.json({ success: true, message: "Previous admin logged out" });
+});
   if (approved) {
     // Send approval to requesting user
     if (request.ws && request.ws.readyState === 1) {
