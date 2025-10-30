@@ -1,4 +1,4 @@
-// game.js — complete, working version
+// game.js – complete, working version
 (function(){
   'use strict';
 
@@ -21,59 +21,59 @@
   function safeGetItem(k){ try { return localStorage.getItem(sanitizeInput(k)); } catch(e){ return null; } }
 
   function connectWebSocket(){
-  try { ws = new WebSocket(WS_URL); } catch(e){ console.error('WS create failed', e); return; }
-  
-  ws.onopen = () => {
-    isConnected = true;
-    reconnectAttempts = 0;
-    if (sessionId && playerName) sendPlayerName();
-  };
-  
-  ws.onmessage = (ev) => {
-    try {
-      const msg = JSON.parse(ev.data);
-      if (msg.type === 'session_id') {
-        sessionId = msg.sessionId;
-        showSessionId();
-        if (playerName) sendPlayerName();
-      } else if (msg.type === 'lock_status') {
-        if (msg.locked) { 
-          alert('🔒 Your session was locked by admin.'); 
-          lockPage(); 
-        } else { 
-          safeSetItem('dungeon_locked',''); 
-          safeSetItem('tab_switch_count','0'); 
-          alert('🔓 Unlocked by admin. Reloading...'); 
-          setTimeout(()=>location.reload(),500); 
+    try { ws = new WebSocket(WS_URL); } catch(e){ console.error('WS create failed', e); return; }
+    
+    ws.onopen = () => {
+      isConnected = true;
+      reconnectAttempts = 0;
+      if (sessionId && playerName) sendPlayerName();
+    };
+    
+    ws.onmessage = (ev) => {
+      try {
+        const msg = JSON.parse(ev.data);
+        if (msg.type === 'session_id') {
+          sessionId = msg.sessionId;
+          showSessionId();
+          if (playerName) sendPlayerName();
+        } else if (msg.type === 'lock_status') {
+          if (msg.locked) { 
+            alert('🔒 Your session was locked by admin.'); 
+            lockPage(); 
+          } else { 
+            safeSetItem('dungeon_locked',''); 
+            safeSetItem('tab_switch_count','0'); 
+            alert('🔓 Unlocked by admin. Reloading...'); 
+            setTimeout(()=>location.reload(),500); 
+          }
+        } else if (msg.type === 'reset') {
+          alert('🔄 Progress reset by admin. Reloading...');
+          localStorage.removeItem('dungeon_progress');
+          setTimeout(()=>location.reload(),300);
+        } else if (msg.type === 'game_started') {
+          alert('🎮 The game has started! Good luck!');
+          removeGameNotStartedOverlay();
+          location.reload();
+        } else if (msg.type === 'game_stopped') {
+          alert('⏹️ The game has been stopped by the administrator.');
+          showGameNotStarted();
         }
-      } else if (msg.type === 'reset') {
-        alert('🔄 Progress reset by admin. Reloading...');
-        localStorage.removeItem('dungeon_progress');
-        setTimeout(()=>location.reload(),300);
-      } else if (msg.type === 'game_started') {
-        alert('🎮 The game has started! Good luck!');
-        removeGameNotStartedOverlay();
-        location.reload();
-      } else if (msg.type === 'game_stopped') {
-        alert('⏹️ The game has been stopped by the administrator.');
-        showGameNotStarted();
+      } catch(e){ 
+        console.error('WS msg parse', e); 
       }
-    } catch(e){ 
-      console.error('WS msg parse', e); 
-    }
-  };
+    };
 
-  ws.onclose = () => {
-    isConnected = false;
-    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-      reconnectAttempts++;
-      setTimeout(connectWebSocket, 2000 * reconnectAttempts);
-    }
-  };
+    ws.onclose = () => {
+      isConnected = false;
+      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        reconnectAttempts++;
+        setTimeout(connectWebSocket, 2000 * reconnectAttempts);
+      }
+    };
 
-  ws.onerror = (err) => console.error('WS error', err);
-}
-  
+    ws.onerror = (err) => console.error('WS error', err);
+  }
+
   function sendRaw(obj){
     if (!ws || ws.readyState !== WebSocket.OPEN) return;
     try { ws.send(JSON.stringify(obj)); } catch(e){ console.error('WS send failed', e); }
@@ -303,7 +303,7 @@
     const expected = (r.answer || '')[0];
     if (first === expected) {
       solved[id] = true;
-      if (fb){ fb.style.color='#00cc66'; fb.textContent='✓ Correct — nice work.'; }
+      if (fb){ fb.style.color='#00cc66'; fb.textContent='✓ Correct – nice work.'; }
       inp.disabled = true;
       const card = document.getElementById('card-'+id); if (card) card.classList.add('solved');
       updateProgressDisplay();
@@ -314,7 +314,7 @@
     } else {
       lives = Math.max(0, lives - 1);
       updateLivesDisplay();
-      if (fb){ fb.style.color='#ff4444'; fb.textContent='✗ Incorrect — try again.'; }
+      if (fb){ fb.style.color='#ff4444'; fb.textContent='✗ Incorrect – try again.'; }
       if (lives <= 0) endGame(false, 'You have run out of lives! The dungeon claims your soul...');
       setTimeout(()=>{ if (fb) fb.textContent=''; }, 3000);
       trackEvent('riddle_failed', { riddle:id, difficulty });
@@ -348,7 +348,7 @@
     const input = document.getElementById('codeInput');
     if (!btn || !input) return;
     btn.addEventListener('click', ()=>{
-      if (isLocked) { alert('Congrats'); return; }
+      if (isLocked) { alert('Page is locked due to excessive tab switching.'); return; }
       let entered = (input.value || '').trim().replace(/\s+/g, '').toUpperCase();
       entered = entered.replace(/[\u200B\u200C\u200D\uFEFF\u2060]/g,'');
       const res = document.getElementById('result');
@@ -526,76 +526,70 @@
     console.log('✅ UI bindings complete');
   }
 
-
   function checkGameState() {
-  // Check if game is started
-  fetch('https://halloween-game-1.onrender.com/api/game-state')
-    .then(res => res.json())
-    .then(state => {
-      if (!state.isStarted) {
-        // Game not started - show blocked screen
-        showGameNotStarted();
-      }
-    })
-    .catch(err => {
-      console.warn('Could not check game state:', err);
-      // If we can't check, allow play (offline mode)
-    });
-}
-
-function showGameNotStarted() {
-  isLocked = true;
-  stopTimer();
-  const overlay = document.createElement('div');
-  overlay.id = 'gameNotStartedOverlay';
-  overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(139,0,0,0.98);display:flex;align-items:center;justify-content:center;z-index:10000;";
-  const box = document.createElement('div');
-  box.style.cssText = "background:linear-gradient(135deg, rgba(0,0,0,0.95), rgba(70,0,0,0.95)); border:4px solid #ff8c00; border-radius:20px; padding:50px; max-width:600px; text-align:center; box-shadow:0 0 80px rgba(255,140,0,0.8);";
-  box.innerHTML = `<h1 style="color:#ff8c00;font-family:Creepster, cursive;">🎮 Game Not Started 🎮</h1><p style="color:#ffaa66;font-family:Creepster, cursive;margin-top:20px;">The game administrator has not started the game yet.<br><br>Please wait for the game to begin!</p>`;
-  overlay.appendChild(box);
-  document.body.appendChild(overlay);
-  document.querySelectorAll('input, button').forEach(el => { if (el.id !== 'adminToggle') el.disabled = true; });
-}
-
-function removeGameNotStartedOverlay() {
-  const overlay = document.getElementById('gameNotStartedOverlay');
-  if (overlay) overlay.remove();
-  isLocked = false;
-  document.querySelectorAll('input, button').forEach(el => el.disabled = false);
-}
-
-  
-  function init(){
-  console.log('🎮 Initializing game...');
-  
-  try { connectWebSocket(); } catch(e){ console.warn('WS init failed', e); }
-  
-  const savedName = safeGetItem('player_name'); 
-  if (savedName) playerName = savedName;
-  
-  if (checkInitialLock()) return;
-  
-  // CHECK GAME STATE FIRST
-  checkGameState();
-  
-  const loaded = loadProgress();
-  if (!loaded) {
-    if (!playerName) { showNamePrompt(); }
-    else { showSessionId(); showDifficultyScreen(); }
-  } else {
-    riddles = riddlesByDifficulty[difficulty];
-    renderRiddles();
-    updateProgressDisplay();
-    updateLivesDisplay();
-    if (startTime && timeLimit > 0) startTimer();
-    showSessionId();
+    fetch('https://halloween-game-1.onrender.com/api/game-state')
+      .then(res => res.json())
+      .then(state => {
+        if (!state.isStarted) {
+          showGameNotStarted();
+        }
+      })
+      .catch(err => {
+        console.warn('Could not check game state:', err);
+      });
   }
-  
-  setTimeout(() => {
-    initUIBindings();
-    console.log('✅ Game initialized');
-  }, 100);
-}
+
+  function showGameNotStarted() {
+    isLocked = true;
+    stopTimer();
+    const overlay = document.createElement('div');
+    overlay.id = 'gameNotStartedOverlay';
+    overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(139,0,0,0.98);display:flex;align-items:center;justify-content:center;z-index:10000;";
+    const box = document.createElement('div');
+    box.style.cssText = "background:linear-gradient(135deg, rgba(0,0,0,0.95), rgba(70,0,0,0.95)); border:4px solid #ff8c00; border-radius:20px; padding:50px; max-width:600px; text-align:center; box-shadow:0 0 80px rgba(255,140,0,0.8);";
+    box.innerHTML = '<h1 style="color:#ff8c00;font-family:Creepster, cursive;">🎮 Game Not Started 🎮</h1><p style="color:#ffaa66;font-family:Creepster, cursive;margin-top:20px;">The game administrator has not started the game yet.<br><br>Please wait for the game to begin!</p>';
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    document.querySelectorAll('input, button').forEach(el => { if (el.id !== 'adminToggle') el.disabled = true; });
+  }
+
+  function removeGameNotStartedOverlay() {
+    const overlay = document.getElementById('gameNotStartedOverlay');
+    if (overlay) overlay.remove();
+    isLocked = false;
+    document.querySelectorAll('input, button').forEach(el => el.disabled = false);
+  }
+
+  function init(){
+    console.log('🎮 Initializing game...');
+    
+    try { connectWebSocket(); } catch(e){ console.warn('WS init failed', e); }
+    
+    const savedName = safeGetItem('player_name'); 
+    if (savedName) playerName = savedName;
+    
+    if (checkInitialLock()) return;
+    
+    checkGameState();
+    
+    const loaded = loadProgress();
+    if (!loaded) {
+      if (!playerName) { showNamePrompt(); }
+      else { showSessionId(); showDifficultyScreen(); }
+    } else {
+      riddles = riddlesByDifficulty[difficulty];
+      renderRiddles();
+      updateProgressDisplay();
+      updateLivesDisplay();
+      if (startTime && timeLimit > 0) startTimer();
+      showSessionId();
+    }
+    
+    setTimeout(() => {
+      initUIBindings();
+      console.log('✅ Game initialized');
+    }, 100);
+  }
 
   window.submitName = function(){
     const input = document.getElementById('nameInput');
@@ -677,17 +671,16 @@ function removeGameNotStartedOverlay() {
       <div class="difficulty-content">
         <h2 style="margin-bottom:16px;font-size:2rem;">Choose Difficulty</h2>
         <p style="margin-bottom:12px;color:#ffb366;">Select how hard you want the dungeon to be.</p>
-        <button class="difficulty-btn" onclick="selectDifficulty('easy')">Easy — Practice</button>
-        <button class="difficulty-btn" onclick="selectDifficulty('medium')">Medium — Normal</button>
-        <button class="difficulty-btn" onclick="selectDifficulty('hard')">Hard — Hardcore</button>
+        <button class="difficulty-btn" onclick="selectDifficulty('easy')">Easy – Practice</button>
+        <button class="difficulty-btn" onclick="selectDifficulty('medium')">Medium – Normal</button>
+        <button class="difficulty-btn" onclick="selectDifficulty('hard')">Hard – Hardcore</button>
       </div>
     `;
     document.body.appendChild(overlay);
   }
 
-  // Hint button function - SINGLE DEFINITION
   window.manualHintClick = function(){
-    console.log('🔍 Hint button clicked!');
+    console.log('💡 Hint button clicked!');
     console.log('Hints remaining:', hintsRemaining);
     console.log('Total hints:', totalHints);
     
