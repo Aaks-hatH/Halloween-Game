@@ -458,7 +458,53 @@
     <button onclick="closeAdmin()" class="secondary">Close</button>
   </div>
 </div>
+<script>
+// Disable right-click
+document.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  alert('Right-click is disabled');
+});
 
+// Disable keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  // F12
+  if (e.keyCode === 123) {
+    e.preventDefault();
+    return false;
+  }
+  // Ctrl+Shift+I (Inspect)
+  if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+    e.preventDefault();
+    return false;
+  }
+  // Ctrl+Shift+C (Inspect Element)
+  if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+    e.preventDefault();
+    return false;
+  }
+  // Ctrl+U (View Source)
+  if (e.ctrlKey && e.keyCode === 85) {
+    e.preventDefault();
+    return false;
+  }
+});
+
+// Detect DevTools
+(function() {
+  var devtools = /./;
+  devtools.toString = function() {
+    this.opened = true;
+  }
+  console.log('%c', devtools);
+  
+  setInterval(function() {
+    if (devtools.opened) {
+      alert('Developer tools detected! Please close them.');
+      devtools.opened = false;
+    }
+  }, 1000);
+})();
+</script>
 <script src="game.js?v=3"></script>
 </body>
 </html>
