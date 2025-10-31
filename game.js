@@ -290,7 +290,7 @@
   }
 
   function checkRiddle(id){
-    if (isLocked) { alert('Page locked due to tab switching.'); return; }
+    if (isLocked) { alert('Congratulations'); return; }
     const inp = document.getElementById('answer'+id);
     const fb = document.getElementById('feedback'+id);
     if (!inp) return;
